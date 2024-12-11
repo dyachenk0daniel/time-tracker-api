@@ -8,6 +8,9 @@ export default [
     languageOptions: {
       globals: {
         console: 'readonly',
+        crypto: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
       },
     },
   },

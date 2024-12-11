@@ -1,10 +1,14 @@
+import * as process from "node:process";
+
 export interface ServerConfig {
+  host: string;
   port: number;
   apiPath: string;
 }
 
 const serverConfig: ServerConfig = {
-  port: 3000,
+  host: process.env.HOST || 'localhost',
+  port: Number(process.env.PORT) || 3000,
   apiPath: '/api',
 }
 

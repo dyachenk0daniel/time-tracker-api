@@ -1,0 +1,232 @@
+import { Router } from 'express';
+import registerController from './controllers/register';
+import loginController from './controllers/login';
+
+const authRouter = Router();
+
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: User login
+ *     description: Authenticate user using email and password. Returns a JWT token on successful login.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The user's email address.
+ *                 example: user@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: The user's password.
+ *                 example: password123
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     token:
+ *                       type: string
+ *                       description: JWT token.
+ *                       example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+ *       400:
+ *         description: Missing email or password / User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: BAD_REQUEST
+ *                     message:
+ *                       type: string
+ *                       example: Email and password are required.
+ *       403:
+ *         description: Invalid password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: INVALID_PASSWORD
+ *                     message:
+ *                       type: string
+ *                       example: Invalid password.
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: SERVER_ERROR
+ *                     message:
+ *                       type: string
+ *                       example: An error occurred while processing your request.
+ */
+authRouter.post('/login', loginController);
+
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: User registration
+ *     description: Register a new user by providing name, email, and password.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - password
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: The user's full name.
+ *                 example: John Doe
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: The user's email address.
+ *                 example: john.doe@example.com
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: The user's password.
+ *                 example: password123
+ *     responses:
+ *       201:
+ *         description: User successfully registered
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       description: The ID of the newly created user.
+ *                       example: 12345
+ *                     name:
+ *                       type: string
+ *                       description: The user's full name.
+ *                       example: John Doe
+ *                     email:
+ *                       type: string
+ *                       description: The user's email address.
+ *                       example: john.doe@example.com
+ *       400:
+ *         description: Missing fields or invalid data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: FIELDS_MISSING
+ *                     message:
+ *                       type: string
+ *                       example: All fields are required.
+ *       409:
+ *         description: User already exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: USER_ALREADY_EXISTS
+ *                     message:
+ *                       type: string
+ *                       example: A user with this email already exists.
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: object
+ *                   properties:
+ *                     code:
+ *                       type: string
+ *                       example: SERVER_ERROR
+ *                     message:
+ *                       type: string
+ *                       example: An error occurred while processing your request.
+ */
+authRouter.post('/register', registerController);
+
+export default authRouter;

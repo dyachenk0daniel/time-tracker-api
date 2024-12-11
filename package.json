@@ -14,16 +14,24 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "jsonwebtoken": "^9.0.2",
     "module-alias": "^2.2.3",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
+    "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^22.9.0",
     "@types/pg": "^8.11.10",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.7",
     "@typescript-eslint/eslint-plugin": "^8.13.0",
     "@typescript-eslint/parser": "^8.13.0",
     "eslint": "^9.14.0",
@@ -34,11 +42,11 @@
     "typescript": "^5.6.3"
   },
   "_moduleAliases": {
-    "@interfaces": "src/interfaces",
-    "@app": "src/app",
-    "@entities": "src/entities",
-    "@infrastructure": "src/infrastructure",
-    "@precesses": "src/precesses",
-    "@shared": "src/shared"
+    "@interfaces": "dist/interfaces",
+    "@app": "dist/app",
+    "@entities": "dist/entities",
+    "@infrastructure": "dist/infrastructure",
+    "@precesses": "dist/precesses",
+    "@shared": "dist/shared"
   }
 }
