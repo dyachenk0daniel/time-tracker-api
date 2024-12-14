@@ -1,8 +1,9 @@
 import { Router } from 'express';
 import { authenticateToken } from '@interfaces/middlewares/authenticate-token';
-import getMeController from './controllers/get-me';
+import UserController from '@interfaces/endpoints/user/controller';
 
 const usersRouter = Router();
+const userController = new UserController();
 
 /**
  * @swagger
@@ -117,6 +118,6 @@ const usersRouter = Router();
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-usersRouter.get('/me', authenticateToken, getMeController);
+usersRouter.get('/me', authenticateToken, userController.getMe.bind(userController));
 
 export default usersRouter;

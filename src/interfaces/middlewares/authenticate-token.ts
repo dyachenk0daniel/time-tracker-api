@@ -1,42 +1,27 @@
 import { NextFunction, Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import config from '@app/config';
 import HttpCode from '@interfaces/http-code';
-import { ApiError } from '@interfaces/response-models';
+import { ErrorResponse } from '@interfaces/response-models';
+import { ErrorCode } from '@interfaces/error-code';
+import UserService from '@entities/user/service';
 
-enum ErrorMessage {
-  AuthorizationHeaderMissing = 'Authorization header is missing.',
-  InvalidOrExpiredToken = 'Invalid or expired token.',
-}
-
-enum ErrorCode {
-  AuthorizationHeaderMissing = 'AUTHORIZATION_HEADER_MISSING',
-  InvalidOrExpiredToken = 'INVALID_OR_EXPIRED_TOKEN',
-}
-
-export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader) {
-    const missingAuthHeaderError = new ApiError(ErrorCode.AuthorizationHeaderMissing, ErrorMessage.AuthorizationHeaderMissing);
-
-    res.status(HttpCode.NotFound).json(missingAuthHeaderError);
-    return;
-  }
-
-  const token = authHeader.split(' ')[1];
-
+export function authenticateToken(req: Request, res: Response, next: NextFunction) {
   try {
-    const decoded = jwt.verify(token, config.auth.jwtSecret) as { userId: number };
+    const authHeader = req.headers.authorization;
 
-    req.body.userId = decoded.userId;
+    if (!authHeader) {
+      const missingAuthHeaderError = new ErrorResponse(ErrorCode.AuthorizationHeaderMissing, 'Authorization header is missing.');
+      res.status(HttpCode.NotFound).json(missingAuthHeaderError);
+      return;
+    }
+
+    const token = authHeader.split(' ')[1];
+    const decoded = UserService.validateToken(token);
+    req.body.userId = decoded.id;
 
     next();
   } catch (error) {
     console.error(error);
-
-    const invalidOrExpiredTokenError = new ApiError(ErrorCode.InvalidOrExpiredToken, ErrorMessage.InvalidOrExpiredToken);
-
+    const invalidOrExpiredTokenError = new ErrorResponse(ErrorCode.InvalidOrExpiredToken, 'Invalid or expired token.');
     res.status(HttpCode.Unauthorized).json(invalidOrExpiredTokenError);
   }
-};
+}

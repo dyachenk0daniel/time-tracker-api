@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import registerController from './controllers/register';
-import loginController from './controllers/login';
+import AuthController from '@interfaces/endpoints/auth/controller';
 
 const authRouter = Router();
+const authController = new AuthController();
 
 /**
  * @swagger
@@ -108,7 +108,7 @@ const authRouter = Router();
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-authRouter.post('/login', loginController);
+authRouter.post('/login', authController.login.bind(authController));
 
 /**
  * @swagger
@@ -227,6 +227,6 @@ authRouter.post('/login', loginController);
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-authRouter.post('/register', registerController);
+authRouter.post('/register', authController.register.bind(authController));
 
 export default authRouter;

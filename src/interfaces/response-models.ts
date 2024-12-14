@@ -1,6 +1,4 @@
-import { ErrorResponse, SuccessResponse } from '@interfaces/response-types';
-
-export class ApiError implements ErrorResponse {
+export class ErrorResponse {
   success = false as const;
   error: {
     code: string;
@@ -13,7 +11,7 @@ export class ApiError implements ErrorResponse {
   }
 }
 
-export class ApiSuccess<T> implements SuccessResponse<T> {
+export class SuccessResponse<T> {
   success = true as const;
   data: T;
 

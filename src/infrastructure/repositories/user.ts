@@ -23,7 +23,7 @@ class UserRepository implements Repository<User> {
     return result.rows[0] || null;
   }
 
-  async create(item: Omit<User, 'createdAt'>): Promise<User> {
+  async create(item: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
     const query = `
             INSERT INTO users (name, email, password, created_at)
             VALUES ($1, $2, $3, $4) RETURNING *;

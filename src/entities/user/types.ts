@@ -4,4 +4,7 @@ export interface User {
   email: string;
   password: string;
   createdAt: string;
+  updatedAt: string | null;
 }
+
+export type UserResponse = Omit<User, 'password'>;
