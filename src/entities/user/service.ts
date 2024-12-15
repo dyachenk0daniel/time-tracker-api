@@ -34,7 +34,7 @@ class UserService {
   }
 
   static validateToken(token: string) {
-    return jwt.verify(token, config.auth.jwtSecret) as { id: number };
+    return jwt.verify(token, config.auth.jwtSecret) as { id: string };
   }
 
   static generateToken<T extends Pick<User, 'id' | 'name'>>(user: T) {
