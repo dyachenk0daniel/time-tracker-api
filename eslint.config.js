@@ -1,16 +1,15 @@
-import js from '@eslint/js';
-import typescriptPlugin from '@typescript-eslint/eslint-plugin';
-import typescriptParser from '@typescript-eslint/parser';
-import prettierConfig from 'eslint-config-prettier';
+const js = require('@eslint/js');
+const typescriptPlugin = require('@typescript-eslint/eslint-plugin');
+const typescriptParser = require('@typescript-eslint/parser');
+const prettierConfig = require('eslint-config-prettier');
+const globals = require('globals');
 
-export default [
+module.exports = [
   {
     languageOptions: {
       globals: {
-        console: 'readonly',
-        crypto: 'readonly',
-        process: 'readonly',
-        __dirname: 'readonly',
+        ...globals.node,
+        ...globals.jest,
       },
     },
   },

@@ -3,7 +3,7 @@ import { ErrorResponse } from '@interfaces/response-models';
 import { ErrorCode } from '@interfaces/error-code';
 import HttpCode from '@interfaces/http-code';
 
-const defaultErrorMessage = 'An error occurred while processing your request';
+const defaultErrorMessage = 'An error occurred while processing your request.';
 
 /**
  * Sends an HTTP 500 (Internal Server Error) response with a standardized error message.
