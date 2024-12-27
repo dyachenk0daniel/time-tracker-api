@@ -8,3 +8,4 @@ export interface User {
 }
 
 export type UserResponse = Omit<User, 'password'>;
+export type CreateUser = Pick<User, 'name' | 'email' | 'password'>

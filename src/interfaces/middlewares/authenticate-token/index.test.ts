@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
 import UserService from '@entities/user/service';
-import { ErrorResponse } from '@interfaces/response-models';
+import { ErrorBody } from '@interfaces/response-models';
 import { authenticateToken } from './index';
 
 jest.mock('@entities/user/service');
@@ -31,8 +31,8 @@ describe('authenticateToken', () => {
   it('should return 404 if Authorization header is missing', () => {
     authenticateToken(req as Request, res as Response, next);
 
-    expect(res.status).toHaveBeenCalledWith(HttpCode.NotFound);
-    expect(res.json).toHaveBeenCalledWith(new ErrorResponse(ErrorCode.AuthorizationHeaderMissing, 'Authorization header is missing.'));
+    expect(res.status).toHaveBeenCalledWith(HttpCode.BadRequest);
+    expect(res.json).toHaveBeenCalledWith(new ErrorBody(ErrorCode.AuthorizationHeaderMissing, 'Authorization header is missing.'));
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -41,11 +41,11 @@ describe('authenticateToken', () => {
     const mockDecoded = { id: '123' };
 
     req.headers!.authorization = `Bearer ${mockToken}`;
-    jest.mocked(UserService.validateToken).mockReturnValue(mockDecoded);
+    jest.mocked(UserService.verifyToken).mockReturnValue(mockDecoded);
 
     authenticateToken(req as Request, res as Response, next);
 
-    expect(UserService.validateToken).toHaveBeenCalledWith(mockToken);
+    expect(UserService.verifyToken).toHaveBeenCalledWith(mockToken);
     expect(req.body.userId).toBe(mockDecoded.id);
     expect(next).toHaveBeenCalled();
     expect(res.status).not.toHaveBeenCalled();
@@ -55,15 +55,15 @@ describe('authenticateToken', () => {
     const mockToken = 'invalid_token';
 
     req.headers!.authorization = `Bearer ${mockToken}`;
-    jest.mocked(UserService.validateToken).mockImplementation(() => {
+    jest.mocked(UserService.verifyToken).mockImplementation(() => {
       throw new Error('Invalid token');
     });
 
     authenticateToken(req as Request, res as Response, next);
 
-    expect(UserService.validateToken).toHaveBeenCalledWith(mockToken);
+    expect(UserService.verifyToken).toHaveBeenCalledWith(mockToken);
     expect(res.status).toHaveBeenCalledWith(HttpCode.Unauthorized);
-    expect(res.json).toHaveBeenCalledWith(new ErrorResponse(ErrorCode.InvalidOrExpiredToken, 'Invalid or expired token.'));
+    expect(res.json).toHaveBeenCalledWith(new ErrorBody(ErrorCode.InvalidOrExpiredToken, 'Invalid or expired token.'));
     expect(next).not.toHaveBeenCalled();
   });
 });

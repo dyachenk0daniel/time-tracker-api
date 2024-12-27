@@ -1,77 +1,85 @@
 import { Pool } from 'pg';
-import { Repository } from '@infrastructure/repositories/types';
 import { User } from '@entities/user/types';
+import { DateUtils } from '@shared/utils';
 
-class UserRepository implements Repository<User> {
-  constructor(private readonly dbPool: Pool) {}
+class UserRepository {
+    constructor(private readonly dbPool: Pool) {}
 
-  async getAll(): Promise<User[]> {
-    const query = 'SELECT * FROM users';
-    const result = await this.dbPool.query(query);
-    return result.rows;
-  }
+    private transformUser(user: Record<string, unknown>) {
+        return {
+            ...user,
+            createdAt: DateUtils.convertDateToISOString(user.created_at as Date) || '',
+            updatedAt: DateUtils.convertDateToISOString(user.updated_at as Date),
+        } as User;
+    }
 
-  async getById(id: number): Promise<User | null> {
-    const query = 'SELECT * FROM users WHERE id = $1';
-    const result = await this.dbPool.query(query, [id]);
-    return result.rows[0] || null;
-  }
+    async getAll(): Promise<User[]> {
+        const query = 'SELECT * FROM users';
+        const result = await this.dbPool.query(query);
 
-  async getByEmail(email: string): Promise<User | null> {
-    const query = 'SELECT * FROM users WHERE email = $1';
-    const result = await this.dbPool.query(query, [email]);
-    return result.rows[0] || null;
-  }
+        return result.rows.map((row) => this.transformUser(row));
+    }
 
-  async create(item: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
-    const query = `
+    async getById(id: string): Promise<User | null> {
+        const query = 'SELECT * FROM users WHERE id = $1';
+        const result = await this.dbPool.query(query, [id]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return null;
+        }
+
+        return this.transformUser(user);
+    }
+
+    async getByEmail(email: string): Promise<User | null> {
+        const query = 'SELECT * FROM users WHERE email = $1';
+        const result = await this.dbPool.query(query, [email]);
+        const user = result.rows[0];
+
+        if (!user) {
+            return null;
+        }
+
+        return this.transformUser(user);
+    }
+
+    async create(item: Omit<User, 'id' | 'createdAt' | 'updatedAt'>): Promise<User> {
+        const query = `
             INSERT INTO users (name, email, password, created_at)
             VALUES ($1, $2, $3, $4) RETURNING *;
         `;
-    const values = [item.name, item.email, item.password, new Date().toISOString()];
-
-    const result = await this.dbPool.query(query, values);
-    return result.rows[0];
-  }
-
-  async update(id: number, item: Partial<User>): Promise<User | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-
-    for (const [key, value] of Object.entries(item)) {
-      if (value !== undefined) {
-        fields.push(`${key} = $${index}`);
-        values.push(value);
-        index++;
-      }
+        const values = [item.name, item.email, item.password, new Date().toISOString()];
+        const result = await this.dbPool.query(query, values);
+        return this.transformUser(result.rows[0]);
     }
 
-    if (fields.length === 0) {
-      throw new Error('No fields provided for update');
-    }
-
-    const query = `
+    async update(user: User): Promise<User> {
+        const query = `
             UPDATE users
-            SET ${fields.join(', ')}
-            WHERE id = $${index} RETURNING *;
+            SET name       = $1,
+                email      = $2,
+                password   = $3,
+                created_at = $4,
+                updated_at = $5
+            WHERE id = $6 RETURNING *;
         `;
-    values.push(id);
+        const values = [user.name, user.email, user.password, user.createdAt, user.updatedAt, user.id];
+        const result = await this.dbPool.query(query, values);
+        return this.transformUser(result.rows[0]);
 
-    const result = await this.dbPool.query(query, values);
-    return result.rows[0] || null;
-  }
-
-  async delete(id: number): Promise<boolean> {
-    const query = 'DELETE FROM users WHERE id = $1';
-    const result = await this.dbPool.query(query, [id]);
-
-    if (!result.rowCount) {
-      return false;
     }
 
-    return result.rowCount > 0;
-  }
+    async delete(id: string): Promise<boolean> {
+        const query = 'DELETE FROM users WHERE id = $1';
+        const result = await this.dbPool.query(query, [id]);
+
+        if (!result.rowCount) {
+            return false;
+        }
+
+        return result.rowCount > 0;
+    }
 }
 
 export default UserRepository;

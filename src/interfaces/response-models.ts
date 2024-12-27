@@ -1,4 +1,4 @@
-export class ErrorResponse {
+export class ErrorBody {
   success = false as const;
   error: {
     code: string;
@@ -11,7 +11,7 @@ export class ErrorResponse {
   }
 }
 
-export class SuccessResponse<T> {
+export class ResponseBody<T> {
   success = true as const;
   data: T;
 

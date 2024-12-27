@@ -11,7 +11,7 @@ const swaggerOptions = {
       title: 'Private Lock API Documentation',
       version: '1.0.0',
       description:
-        "Private Lock API provides a secure and efficient solution for managing sensitive information, including passwords, personal notes, and other confidential data. This API empowers developers to integrate advanced password management features into their applications, ensuring encrypted storage, robust authentication, and seamless access controls. Whether you're building a personal security tool or an enterprise-level solution, Private Lock API offers the foundation for top-notch security and user convenience.",
+          "Private Lock API provides a secure and efficient solution for managing sensitive information, including passwords, personal notes, and other confidential data. This API empowers developers to integrate advanced password management features into their applications, ensuring encrypted storage, robust authentication, and seamless access controls. Whether you're building a personal security tool or an enterprise-level solution, Private Lock API offers the foundation for top-notch security and user convenience.",
     },
     servers: [
       {

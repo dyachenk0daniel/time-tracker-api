@@ -4,7 +4,7 @@ export enum ErrorCode {
     InvalidPassword = 'INVALID_PASSWORD',
     FieldsMissing = 'FIELDS_MISSING',
     UserAlreadyExists = 'USER_ALREADY_EXISTS',
-    ServerError = 'SERVER_ERROR',
+    InternalServerError = 'INTERNAL_SERVER_ERROR',
     AuthorizationHeaderMissing = 'AUTHORIZATION_HEADER_MISSING',
     InvalidOrExpiredToken = 'INVALID_OR_EXPIRED_TOKEN',
 }

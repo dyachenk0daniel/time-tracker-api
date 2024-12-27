@@ -64,7 +64,7 @@ describe('usersRouter', () => {
 
       expect(response.status).toBe(500);
       expect(response.body.success).toBe(false);
-      expect(response.body.error).toHaveProperty('code', ErrorCode.ServerError);
+      expect(response.body.error).toHaveProperty('code', ErrorCode.InternalServerError);
       expect(response.body.error).toHaveProperty('message', 'An error occurred while processing your request.');
     });
   });

@@ -1,5 +1,6 @@
 import 'module-alias/register';
 import express from 'express';
+import logger from "@app/middlware/logger";
 import apiRouter from '@interfaces/api-router';
 import dbPool from '@infrastructure/database/connection';
 import config from './config';
@@ -10,6 +11,7 @@ const app = express();
 
 setupSwagger(app);
 
+app.use(logger);
 app.use(express.json());
 app.use(apiPath, apiRouter);
 

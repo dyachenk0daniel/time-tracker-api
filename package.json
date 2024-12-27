@@ -22,7 +22,8 @@
     "module-alias": "^2.2.3",
     "pg": "^8.13.1",
     "swagger-jsdoc": "^6.2.8",
-    "swagger-ui-express": "^5.0.1"
+    "swagger-ui-express": "^5.0.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
