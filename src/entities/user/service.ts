@@ -3,7 +3,6 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '@app/config';
 import UserRepository from '@infrastructure/repositories/user';
-import dbPool from '@infrastructure/database/connection';
 import { UserModel } from '@entities/user/model';
 import { UserNotFoundError } from '@entities/user/errors';
 
@@ -12,7 +11,7 @@ class UserService {
     private readonly userRepository: UserRepository;
 
     constructor() {
-        this.userRepository = new UserRepository(dbPool);
+        this.userRepository = new UserRepository();
     }
 
     async getUserByEmail(email: string): Promise<User | null> {
