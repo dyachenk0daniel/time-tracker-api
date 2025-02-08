@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import HttpCode from '@interfaces/http-code';
 import { ErrorBody } from '@interfaces/response-models';
 import { ErrorCode } from '@interfaces/error-code';
-import UserService from '@entities/user/service';
+import UserUtils from "@entities/user/utils";
 
 export function authenticateToken(req: Request, res: Response, next: NextFunction) {
     try {
@@ -18,7 +18,7 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = UserService.verifyToken(token);
+        const decoded = UserUtils.verifyToken(token);
         req.body.userId = decoded.id;
 
         next();

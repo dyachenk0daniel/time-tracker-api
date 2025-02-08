@@ -5,6 +5,7 @@ import UserService from '@entities/user/service';
 import { LoginRequestBody, RegisterRequestBody } from './types';
 import RequestHandler from '@interfaces/request-handler';
 import { UserModel } from '@entities/user/model';
+import UserUtils from "@entities/user/utils";
 
 class AuthController extends RequestHandler {
     private readonly userService: UserService;
@@ -33,13 +34,13 @@ class AuthController extends RequestHandler {
                 return this.sendError(res, HttpCode.BadRequest, ErrorCode.UserNotFound, 'User not found.');
             }
 
-            const isMatch = await UserService.comparePasswords(password, user.password);
+            const isMatch = await UserUtils.comparePasswords(password, user.password);
 
             if (!isMatch) {
                 return this.sendError(res, HttpCode.Forbidden, ErrorCode.InvalidPassword, 'Invalid password.');
             }
 
-            const token = UserService.generateToken(user);
+            const token = UserUtils.generateToken(user);
             this.sendResponse(res, { token });
         } catch (error) {
             console.error('Error during login:', error);

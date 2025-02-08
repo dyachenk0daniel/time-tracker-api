@@ -1,7 +1,5 @@
 import { User } from './types';
 import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import config from '@app/config';
 import UserRepository from '@infrastructure/repositories/user';
 import { UserModel } from '@entities/user/model';
 import { UserNotFoundError } from '@entities/user/errors';
@@ -40,25 +38,6 @@ class UserService {
         userModel.patch({ name, email, updatedAt: new Date().toISOString() });
 
         return this.userRepository.update(userModel.toPlain());
-    }
-
-    static async comparePasswords(inputPassword: string, hashedPassword: string): Promise<boolean> {
-        return bcrypt.compare(inputPassword, hashedPassword);
-    }
-
-    static verifyToken(token: string) {
-        return jwt.verify(token, config.auth.jwtSecret) as { id: string };
-    }
-
-    static generateToken<T extends Pick<User, 'id' | 'name'>>(user: T) {
-        return jwt.sign(
-            {
-                id: user.id,
-                name: user.name,
-            },
-            config.auth.jwtSecret,
-            { expiresIn: config.auth.jwtExpiresIn }
-        );
     }
 }
 
