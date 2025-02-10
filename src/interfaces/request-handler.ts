@@ -1,5 +1,5 @@
 import { Response } from 'express';
-import { ErrorBody, ResponseBody } from '@interfaces/response-models';
+import { ErrorBody, ErrorDetails, ResponseBody } from '@interfaces/response-models';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
 
@@ -9,8 +9,14 @@ abstract class RequestHandler {
         res.status(httpCode).json(response);
     }
 
-    protected sendError(res: Response, httpCode: HttpCode, errorCode: ErrorCode, message: string) {
-        const errorResponse = new ErrorBody(errorCode, message);
+    protected sendError(
+        res: Response,
+        httpCode: HttpCode,
+        errorCode: ErrorCode,
+        message: string,
+        details?: ErrorDetails
+    ) {
+        const errorResponse = new ErrorBody(errorCode, message, details);
         res.status(httpCode).json(errorResponse);
     }
 

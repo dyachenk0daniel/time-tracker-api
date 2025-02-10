@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import AuthController from '@interfaces/endpoints/auth/controller';
+import { loginValidationRules, registerValidationRules } from './validation';
+import validateRequest from '@interfaces/middlewares/validate-request';
 
 const authRouter = Router();
 const authController = new AuthController();
@@ -108,7 +110,7 @@ const authController = new AuthController();
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-authRouter.post('/login', authController.login.bind(authController));
+authRouter.post('/login', loginValidationRules, validateRequest, authController.login.bind(authController));
 
 /**
  * @swagger
@@ -227,6 +229,6 @@ authRouter.post('/login', authController.login.bind(authController));
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-authRouter.post('/register', authController.register.bind(authController));
+authRouter.post('/register', registerValidationRules, validateRequest, authController.register.bind(authController));
 
 export default authRouter;
