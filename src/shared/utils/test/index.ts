@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 
 class TestUtils {
-  static mockObject<T>(defaults: Partial<T> = {}): T {
+  static mockPartial<T>(defaults: Partial<T> = {}): T {
     return <T>defaults;
   }
 

@@ -30,7 +30,7 @@ describe('usersRouter', () => {
     describe('GET /me', () => {
         it('should return current user', async () => {
             const mockUser: User = {
-                ...TestUtils.mockObject(),
+                ...TestUtils.mockPartial(),
                 id: '123',
                 name: 'John Doe',
                 email: 'john.doe@example.com',
@@ -73,7 +73,7 @@ describe('usersRouter', () => {
     describe('PUT /me', () => {
         it('should update user data', async () => {
             const updatedUser: User = {
-                ...TestUtils.mockObject(),
+                ...TestUtils.mockPartial(),
                 id: '123',
                 name: 'Jane Doe',
                 email: 'jane.doe@example.com',
