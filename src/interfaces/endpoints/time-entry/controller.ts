@@ -43,6 +43,22 @@ class TimeEntryController extends RequestHandler {
             this.sendInternalError(res);
         }
     }
+
+    async createTimeEntry(req: Request, res: Response) {
+        try {
+            const { userId, description, startTime, endTime } = req.body;
+            const newTimeEntry = await this.timeEntryService.createTimeEntry({
+                userId,
+                description,
+                startTime,
+                endTime,
+            });
+            this.sendResponse(res, newTimeEntry, HttpCode.Created);
+        } catch (error) {
+            console.error('Error creating time entry:', error);
+            this.sendInternalError(res);
+        }
+    }
 }
 
 export default TimeEntryController;

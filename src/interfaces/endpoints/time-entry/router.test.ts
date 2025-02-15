@@ -118,4 +118,58 @@ describe('timeEntryRouter', () => {
             expect(response.body.data[1]).toHaveProperty('description', 'Test time entry 2');
         });
     });
+
+    describe('POST /', () => {
+        it('should create a new time entry', async () => {
+            const mockTimeEntry: TimeEntry = {
+                id: '123e4567-e89b-12d3-a456-426614174000',
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Test time entry',
+                startTime: '2023-12-01T12:00:00Z',
+                endTime: '2023-12-01T13:00:00Z',
+                createdAt: '2023-12-01T12:00:00Z',
+                updatedAt: '2023-12-01T12:00:00Z',
+            };
+
+            jest.mocked(TimeEntryService.prototype.createTimeEntry).mockResolvedValue(mockTimeEntry);
+
+            const response = await request(app).post('/api/time-entries').send({
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Test time entry',
+                startTime: '2023-12-01T12:00:00Z',
+                endTime: '2023-12-01T13:00:00Z',
+            });
+
+            expect(response.statusCode).toBe(201);
+            expect(response.body.data).toHaveProperty('id', mockTimeEntry.id);
+            expect(response.body.data).toHaveProperty('userId', '123e4567-e89b-12d3-a456-426614174000');
+            expect(response.body.data).toHaveProperty('description', 'Test time entry');
+            expect(response.body.data).toHaveProperty('startTime', '2023-12-01T12:00:00Z');
+            expect(response.body.data).toHaveProperty('endTime', '2023-12-01T13:00:00Z');
+        });
+
+        it('should validate required fields', async () => {
+            const response = await request(app).post('/api/time-entries').send({
+                userId: '123',
+                startTime: '2023-01-01T00:00:00',
+            });
+
+            expect(response.statusCode).toBe(HttpCode.BadRequest);
+            expect(response.body.error.code).toBe(ErrorCode.BadRequest);
+        });
+
+        it('should handle database errors', async () => {
+            jest.mocked(TimeEntryService.prototype.createTimeEntry).mockRejectedValue(new Error());
+
+            const response = await request(app).post('/api/time-entries').send({
+                userId: '123',
+                description: 'Test entry',
+                startTime: '2023-01-01T00:00:00',
+                endTime: '2023-01-01T01:00:00',
+            });
+
+            expect(response.statusCode).toBe(HttpCode.InternalServerError);
+            expect(response.body.error.code).toBe(ErrorCode.InternalServerError);
+        });
+    });
 });
