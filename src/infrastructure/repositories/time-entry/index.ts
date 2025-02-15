@@ -29,7 +29,7 @@ class TimeEntryRepository {
                 userId: data.userId,
                 description: data.description,
                 startTime: new Date(data.startTime),
-                endTime: data.endTime ? new Date(data.endTime) : null,
+                endTime: null,
             },
         });
         return DateUtils.convertDatesToISOStrings(timeEntry);

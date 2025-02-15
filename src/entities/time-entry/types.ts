@@ -8,5 +8,6 @@ export interface TimeEntry {
     updatedAt: string | null;
 }
 
-export type CreateTimeEntry = Pick<TimeEntry, 'userId' | 'description' | 'startTime' | 'endTime'>;
-export type UpdateTimeEntry = Partial<CreateTimeEntry> & Pick<TimeEntry, 'userId'>;
+export type CreateTimeEntry = Pick<TimeEntry, 'userId' | 'description' | 'startTime'>;
+export type UpdateTimeEntry = Partial<Pick<TimeEntry, 'userId' | 'description' | 'startTime' | 'endTime'>> &
+    Pick<TimeEntry, 'userId'>;

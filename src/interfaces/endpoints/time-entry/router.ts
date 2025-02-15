@@ -2,7 +2,11 @@ import { Router } from 'express';
 import { authenticateToken } from '@interfaces/middlewares/authenticate-token';
 import validateRequest from '@interfaces/middlewares/validate-request';
 import TimeEntryController from './controller';
-import { createTimeEntryValidationRules, getTimeEntryByIdValidationRules } from './validation';
+import {
+    createTimeEntryValidationRules,
+    getTimeEntryByIdValidationRules,
+    stopTimeEntryValidationRules,
+} from './validation';
 
 const timeEntryRouter = Router();
 const timeEntryController = new TimeEntryController();
@@ -21,6 +25,13 @@ timeEntryRouter.post(
     createTimeEntryValidationRules,
     validateRequest,
     timeEntryController.createTimeEntry.bind(timeEntryController)
+);
+timeEntryRouter.put(
+    '/:id/stop',
+    authenticateToken,
+    stopTimeEntryValidationRules,
+    validateRequest,
+    timeEntryController.stopTimeEntry.bind(timeEntryController)
 );
 
 export default timeEntryRouter;

@@ -97,7 +97,6 @@ describe('TimeEntryRepository', () => {
             userId: '123',
             description: 'New Task',
             startTime: mockDate,
-            endTime: null,
         });
 
         expect(createdEntry).toEqual({

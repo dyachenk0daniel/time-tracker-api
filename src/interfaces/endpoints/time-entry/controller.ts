@@ -46,16 +46,38 @@ class TimeEntryController extends RequestHandler {
 
     async createTimeEntry(req: Request, res: Response) {
         try {
-            const { userId, description, startTime, endTime } = req.body;
+            const { userId, description, startTime } = req.body;
             const newTimeEntry = await this.timeEntryService.createTimeEntry({
                 userId,
                 description,
                 startTime,
-                endTime,
             });
             this.sendResponse(res, newTimeEntry, HttpCode.Created);
         } catch (error) {
             console.error('Error creating time entry:', error);
+            this.sendInternalError(res);
+        }
+    }
+
+    async stopTimeEntry(req: Request, res: Response) {
+        try {
+            const { userId, endTime } = req.body;
+            const { id } = req.params;
+            const stoppedTimeEntry = await this.timeEntryService.updateTimeEntry(id, {
+                userId,
+                endTime,
+            });
+
+            if (!stoppedTimeEntry) {
+                throw new TimeEntryNotFoundError();
+            }
+
+            this.sendResponse(res, stoppedTimeEntry);
+        } catch (error) {
+            if (error instanceof TimeEntryNotFoundError) {
+                return this.sendError(res, HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
+            }
+            console.error('Error stopping time entry:', error);
             this.sendInternalError(res);
         }
     }
