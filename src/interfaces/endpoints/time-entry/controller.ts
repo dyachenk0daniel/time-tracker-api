@@ -67,11 +67,6 @@ class TimeEntryController extends RequestHandler {
                 userId,
                 endTime,
             });
-
-            if (!stoppedTimeEntry) {
-                throw new TimeEntryNotFoundError();
-            }
-
             this.sendResponse(res, stoppedTimeEntry);
         } catch (error) {
             if (error instanceof TimeEntryNotFoundError) {
