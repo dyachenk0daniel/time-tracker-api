@@ -6,6 +6,10 @@ class StringUtils {
     static toCamelCase(str: string): string {
         return str.replace(/_([a-z0-9])/g, (match, letter) => letter.toUpperCase());
     }
+
+   static generateUUID(): string {
+        return crypto.randomUUID();
+   }
 }
 
 export default StringUtils;

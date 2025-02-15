@@ -74,4 +74,18 @@ describe('StringUtils', () => {
             expect(result).toBe('alreadyCamelCase');
         });
     });
+
+    describe('generateUUID', () => {
+        it('should generate a valid UUID', () => {
+            const mockUUID = '123e4567-e89b-12d3-a456-426614174000';
+
+            jest.spyOn(global.crypto, 'randomUUID').mockReturnValue(mockUUID);
+
+            const result = StringUtils.generateUUID();
+
+            expect(result).toBe(mockUUID);
+
+            jest.restoreAllMocks();
+        });
+    });
 });

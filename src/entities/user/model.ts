@@ -1,4 +1,4 @@
-import { ObjectUtils } from '@shared/utils';
+import { DateUtils, ObjectUtils, StringUtils } from '@shared/utils';
 import { CreateUser, User, UserResponse } from './types';
 
 export class UserModel {
@@ -10,11 +10,11 @@ export class UserModel {
     updatedAt: string | null;
 
     constructor({
-        id = crypto.randomUUID(),
+        id = StringUtils.generateUUID(),
         name,
         email,
         password,
-        createdAt = new Date().toISOString(),
+        createdAt = DateUtils.getCurrentDateISOString(),
         updatedAt = null,
     }: Partial<User> & Pick<User, 'name' | 'email' | 'password'>) {
         this.id = id;

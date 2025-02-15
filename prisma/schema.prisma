@@ -17,3 +17,16 @@ model User {
 
   @@map("users")
 }
+
+
+model TimeEntry {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String    @db.Uuid @map("user_id")
+  description String    @db.Text
+  startTime   DateTime  @db.Timestamptz(6) @map("start_time")
+  endTime     DateTime? @db.Timestamptz(6) @map("end_time")
+  createdAt   DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt   DateTime? @db.Timestamptz(6) @map("updated_at")
+
+  @@map("time_entries")
+}
