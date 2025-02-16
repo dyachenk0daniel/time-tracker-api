@@ -18,9 +18,6 @@
       "@infrastructure/*": [
         "infrastructure/*"
       ],
-      "@precesses/*": [
-        "precesses/*"
-      ],
       "@shared/*": [
         "shared/*"
       ]

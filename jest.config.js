@@ -7,7 +7,6 @@ module.exports = {
     '^@app/(.*)$': '<rootDir>/src/app/$1',
     '^@entities/(.*)$': '<rootDir>/src/entities/$1',
     '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
-    '^@precesses/(.*)$': '<rootDir>/src/precesses/$1',
     '^@shared/(.*)$': '<rootDir>/src/shared/$1',
   },
   transform: {
