@@ -26,3 +26,6 @@ export const stopTimeEntryValidationRules = [
         .isISO8601()
         .withMessage('End time must be a valid ISO 8601 date'),
 ];
+export const deleteTimeEntryValidationRules = [
+    param('id').isUUID().withMessage('ID must be a valid UUID')
+];

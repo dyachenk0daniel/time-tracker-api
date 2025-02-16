@@ -233,4 +233,50 @@ describe('timeEntryRouter', () => {
             expect(response.body.error).toHaveProperty('message', 'An error occurred while processing your request.');
         });
     });
+
+    describe('DELETE /:id/delete', () => {
+        it('should delete a time entry', async () => {
+            jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockResolvedValue(true);
+
+            const response = await request(app)
+                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.Ok);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data).toHaveProperty('message', 'Time entry deleted successfully');
+        });
+
+        it('should return 404 if time entry not found', async () => {
+            jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockResolvedValue(false);
+
+            const response = await request(app)
+                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.NotFound);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error).toHaveProperty('code', ErrorCode.TimeEntryNotFound);
+        });
+
+        it('should return 400 for invalid UUID format', async () => {
+            const response = await request(app)
+                .delete('/api/time-entries/invalid-id/delete')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.BadRequest);
+            expect(response.body.error.details[0].msg).toBe('ID must be a valid UUID');
+        });
+
+        it('should return 500 on server error', async () => {
+            jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockRejectedValue(new Error());
+
+            const response = await request(app)
+                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.InternalServerError);
+            expect(response.body.error.code).toBe(ErrorCode.InternalServerError);
+        });
+    });
 });

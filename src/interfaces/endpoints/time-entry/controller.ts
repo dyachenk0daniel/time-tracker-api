@@ -76,6 +76,23 @@ class TimeEntryController extends RequestHandler {
             this.sendInternalError(res);
         }
     }
+
+    async deleteTimeEntry(req: Request, res: Response) {
+        try {
+            const { userId } = req.body;
+            const { id } = req.params;
+            const deleted = await this.timeEntryService.deleteTimeEntry(id, userId);
+
+            if (!deleted) {
+                return this.sendError(res, HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
+            }
+
+            this.sendResponse(res, { message: 'Time entry deleted successfully' });
+        } catch (error) {
+            console.error('Error deleting time entry:', error);
+            this.sendInternalError(res);
+        }
+    }
 }
 
 export default TimeEntryController;

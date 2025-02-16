@@ -4,6 +4,7 @@ import validateRequest from '@interfaces/middlewares/validate-request';
 import TimeEntryController from './controller';
 import {
     createTimeEntryValidationRules,
+    deleteTimeEntryValidationRules,
     getTimeEntryByIdValidationRules,
     stopTimeEntryValidationRules,
 } from './validation';
@@ -32,6 +33,13 @@ timeEntryRouter.put(
     stopTimeEntryValidationRules,
     validateRequest,
     timeEntryController.stopTimeEntry.bind(timeEntryController)
+);
+timeEntryRouter.delete(
+    '/:id/delete',
+    authenticateToken,
+    deleteTimeEntryValidationRules,
+    validateRequest,
+    timeEntryController.deleteTimeEntry.bind(timeEntryController)
 );
 
 export default timeEntryRouter;
