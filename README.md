@@ -50,7 +50,12 @@ npm run dev
    JWT_EXPIRES_IN=1h
     ```
 
-4. Run the application:
+4. Apply database migrations using Prisma:
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+5. Run the application:
 
     ```bash
     npm run build
