@@ -1,6 +1,8 @@
 # Time Tracker API
 
-Welcome to the **Time Tracker API**! This API allows users to efficiently manage their time entries, track productivity, and streamline the time tracking process. Whether you're managing tasks, projects, or just tracking your daily work, this API provides a simple and reliable way to keep everything in check.
+Welcome to the **Time Tracker API**! This API allows users to efficiently manage their time entries, track productivity,
+and streamline the time tracking process. Whether you're managing tasks, projects, or just tracking your daily work,
+this API provides a simple and reliable way to keep everything in check.
 
 ## Features
 
@@ -13,6 +15,13 @@ Welcome to the **Time Tracker API**! This API allows users to efficiently manage
 ## API Documentation
 
 For detailed documentation on how to use the API, visit: [API Documentation](http://localhost:3000/api-docs)
+
+Before accessing the documentation, make sure to start the project by running:
+
+```bash
+npm install
+npm run dev
+```
 
 ## Installation
 
@@ -71,7 +80,8 @@ Here are the main endpoints available in the API:
 
 ## Authentication
 
-The API uses JWT (JSON Web Tokens) for authentication. To access protected routes, you need to include the `Authorization` header in your requests, like so:
+The API uses JWT (JSON Web Tokens) for authentication. To access protected routes, you need to include the
+`Authorization` header in your requests, like so:
 
 ```bash
 Authorization: Bearer <your_jwt_token>
