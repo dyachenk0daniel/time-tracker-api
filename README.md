@@ -1,16 +1,11 @@
 # Time Tracker API
 
-Welcome to the **Time Tracker API**! This API allows users to efficiently manage their time entries, track productivity,
-and streamline the time tracking process. Whether you're managing tasks, projects, or just tracking your daily work,
-this API provides a simple and reliable way to keep everything in check.
+Time Tracker API is a simple time management application that allows users to track the time spent on tasks.
 
 ## Features
 
-- **Create and Manage Time Entries**: Track time spent on specific tasks or projects.
-- **Update and Edit Entries**: Modify existing time entries with ease.
-- **Track Productivity**: Monitor work time and improve your overall efficiency.
-- **User Management**: Manage users with simple authentication via JWT.
-- **Error Handling**: Clear error responses to help you troubleshoot any issues.
+- **User Management**: User registration and authentication.
+- **Time Tracking**: Track time spent on tasks and manage time entries.
 
 ## API Documentation
 
