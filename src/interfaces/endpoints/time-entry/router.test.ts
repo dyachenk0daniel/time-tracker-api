@@ -234,12 +234,12 @@ describe('timeEntryRouter', () => {
         });
     });
 
-    describe('DELETE /:id/delete', () => {
+    describe('DELETE /:id', () => {
         it('should delete a time entry', async () => {
             jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockResolvedValue(true);
 
             const response = await request(app)
-                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .delete(`/api/time-entries/${mockTimeEntryId}`)
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.Ok);
@@ -251,7 +251,7 @@ describe('timeEntryRouter', () => {
             jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockResolvedValue(false);
 
             const response = await request(app)
-                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .delete(`/api/time-entries/${mockTimeEntryId}`)
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.NotFound);
@@ -261,7 +261,7 @@ describe('timeEntryRouter', () => {
 
         it('should return 400 for invalid UUID format', async () => {
             const response = await request(app)
-                .delete('/api/time-entries/invalid-id/delete')
+                .delete('/api/time-entries/invalid-id')
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.BadRequest);
@@ -272,7 +272,7 @@ describe('timeEntryRouter', () => {
             jest.mocked(TimeEntryService.prototype.deleteTimeEntry).mockRejectedValue(new Error());
 
             const response = await request(app)
-                .delete(`/api/time-entries/${mockTimeEntryId}/delete`)
+                .delete(`/api/time-entries/${mockTimeEntryId}`)
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.InternalServerError);
