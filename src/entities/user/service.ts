@@ -2,7 +2,9 @@ import { User } from './types';
 import bcrypt from 'bcrypt';
 import UserRepository from '@infrastructure/repositories/user';
 import { UserModel } from '@entities/user/model';
-import { UserNotFoundError } from '@entities/user/errors';
+import { HttpException } from '@interfaces/response-models';
+import HttpCode from '@interfaces/http-code';
+import { ErrorCode } from '@interfaces/error-code';
 
 class UserService {
     private readonly bcryptSaltRounds = 10;
@@ -31,7 +33,7 @@ class UserService {
         const user = await this.getUserById(id);
 
         if (!user) {
-            throw new UserNotFoundError();
+            throw new HttpException(HttpCode.NotFound, ErrorCode.UserNotFound, 'User not found.');
         }
 
         const userModel = new UserModel(user);

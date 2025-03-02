@@ -1,6 +1,8 @@
 import TimeEntryRepository from '@infrastructure/repositories/time-entry';
 import { CreateTimeEntry, TimeEntry, UpdateTimeEntry } from './types';
-import { TimeEntryNotFoundError } from './errors';
+import { HttpException } from '@interfaces/response-models';
+import HttpCode from '@interfaces/http-code';
+import { ErrorCode } from '@interfaces/error-code';
 
 class TimeEntryService {
     private readonly timeEntryRepository: TimeEntryRepository;
@@ -21,7 +23,7 @@ class TimeEntryService {
         const timeEntry = await this.getTimeEntryById(id, data.userId);
 
         if (!timeEntry) {
-            throw new TimeEntryNotFoundError();
+            throw new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
         }
 
         return this.timeEntryRepository.update(id, data);

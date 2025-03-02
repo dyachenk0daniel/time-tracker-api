@@ -6,6 +6,7 @@ import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import logger from '@app/middlware/logger';
 import apiRouter from '@interfaces/api-router';
+import errorHandler from '@interfaces/middlewares/error-handler';
 import config from './config';
 import { setupSwagger } from './swagger';
 
@@ -27,6 +28,7 @@ app.use(limiter);
 app.use(logger);
 app.use(express.json());
 app.use(apiPath, apiRouter);
+app.use(errorHandler);
 
 app.listen(port, host, () => {
     console.log(`Server is running on http://${host}:${port}`);

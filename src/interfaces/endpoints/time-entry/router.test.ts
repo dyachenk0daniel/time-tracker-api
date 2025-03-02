@@ -7,7 +7,7 @@ import { TimeEntry } from '@entities/time-entry/types';
 import { TestUtils } from '@shared/utils';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
-import { TimeEntryNotFoundError } from '@entities/time-entry/errors';
+import { HttpException } from '@interfaces/response-models';
 
 jest.mock('@interfaces/middlewares/authenticate-token');
 jest.mock('@entities/time-entry/service');
@@ -206,7 +206,9 @@ describe('timeEntryRouter', () => {
         });
 
         it('should return 404 if time entry is not found', async () => {
-            jest.mocked(TimeEntryService.prototype.updateTimeEntry).mockRejectedValue(new TimeEntryNotFoundError());
+            jest.mocked(TimeEntryService.prototype.updateTimeEntry).mockRejectedValue(
+                new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found')
+            );
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)

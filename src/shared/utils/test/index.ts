@@ -1,4 +1,5 @@
 import express, { Router } from 'express';
+import errorHandler from '@interfaces/middlewares/error-handler';
 
 class TestUtils {
   static mockPartial<T>(defaults: Partial<T> = {}): T {
@@ -9,6 +10,7 @@ class TestUtils {
     const app = express();
     app.use(express.json());
     app.use(basePath, router);
+    app.use(errorHandler);
 
     return app;
   }

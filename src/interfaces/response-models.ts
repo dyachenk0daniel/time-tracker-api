@@ -1,4 +1,6 @@
 import { ValidationError } from 'express-validator';
+import HttpCode from '@interfaces/http-code';
+import { ErrorCode } from '@interfaces/error-code';
 
 export type ErrorDetails = string | ValidationError[];
 
@@ -21,5 +23,18 @@ export class ResponseBody<T> {
 
     constructor(data: T) {
         this.data = data;
+    }
+}
+
+export class HttpException extends Error {
+    httpCode: HttpCode;
+    errorCode: ErrorCode;
+    details?: ErrorDetails;
+
+    constructor(httpCode: HttpCode, errorCode: ErrorCode, message: string, details?: ErrorDetails) {
+        super(message);
+        this.httpCode = httpCode;
+        this.errorCode = errorCode;
+        this.details = details;
     }
 }

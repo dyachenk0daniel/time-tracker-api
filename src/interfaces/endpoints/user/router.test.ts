@@ -7,7 +7,7 @@ import { User } from '@entities/user/types';
 import { TestUtils } from '@shared/utils';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
-import { UserNotFoundError } from '@entities/user/errors';
+import { HttpException } from '@interfaces/response-models';
 
 jest.mock('@interfaces/middlewares/authenticate-token');
 jest.mock('@entities/user/service');
@@ -93,7 +93,9 @@ describe('usersRouter', () => {
         });
 
         it('should return 404 if user is not found', async () => {
-            jest.mocked(UserService.prototype.updateUser).mockRejectedValue(new UserNotFoundError());
+            jest.mocked(UserService.prototype.updateUser).mockRejectedValue(
+                new HttpException(HttpCode.NotFound, ErrorCode.UserNotFound, 'User not found.')
+            );
 
             const response = await request(app)
                 .put('/api/users/me')
