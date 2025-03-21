@@ -1,10 +1,21 @@
 import { Router } from 'express';
+import rateLimit from 'express-rate-limit';
 import AuthController from '@interfaces/endpoints/auth/controller';
 import { loginValidationRules, registerValidationRules } from './validation';
 import validateRequest from '@interfaces/middlewares/validate-request';
+import { ErrorCode } from '@interfaces/error-code';
+import { ErrorBody } from '@interfaces/response-models';
 
 const authRouter = Router();
 const authController = new AuthController();
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    limit: 5, // Maximum 5 attempts
+    message: new ErrorBody(ErrorCode.TooManyAttempts, 'Too many requests, please try again later.'),
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 /**
  * @swagger
@@ -110,7 +121,13 @@ const authController = new AuthController();
  *                       type: string
  *                       example: An error occurred while processing your request.
  */
-authRouter.post('/login', loginValidationRules, validateRequest, authController.login.bind(authController));
+authRouter.post(
+    '/login',
+    loginLimiter,
+    loginValidationRules,
+    validateRequest,
+    authController.login.bind(authController)
+);
 
 /**
  * @swagger

@@ -7,4 +7,5 @@ export enum ErrorCode {
     AuthorizationHeaderMissing = 'AUTHORIZATION_HEADER_MISSING',
     InvalidOrExpiredToken = 'INVALID_OR_EXPIRED_TOKEN',
     TimeEntryNotFound = 'TIME_ENTRY_NOT_FOUND',
+    TooManyAttempts = 'TOO_MANY_ATTEMPTS',
 }
