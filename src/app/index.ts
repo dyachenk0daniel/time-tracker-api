@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import logger from '@app/middlewares/logger';
+import { logRequest } from '@app/middlewares/logger';
 import apiRouter from '@interfaces/api-router';
 import errorHandler from '@interfaces/middlewares/error-handler';
 import config from './config';
@@ -25,7 +25,7 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-app.use(logger);
+app.use(logRequest);
 app.use(express.json());
 app.use(apiPath, apiRouter);
 app.use(errorHandler);

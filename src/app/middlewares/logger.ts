@@ -16,4 +16,4 @@ const logRequest = (req: Request, res: Response, next: NextFunction) => {
     next();
 };
 
-export default logRequest;
+export { logger, logRequest };
