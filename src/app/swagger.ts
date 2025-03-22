@@ -10,7 +10,8 @@ const swaggerOptions = {
         info: {
             title: 'Time Tracker API Documentation',
             version: '1.0.0',
-            description: 'A simple and efficient API to manage time entries, helping users track their work and productivity with ease.',
+            description:
+                'A simple and efficient API to manage time entries, helping users track their work and productivity with ease.',
         },
         servers: [
             {
@@ -174,14 +175,14 @@ const swaggerOptions = {
                         email: {
                             type: 'string',
                             format: 'email',
-                            example: 'user@example.com'
+                            example: 'user@example.com',
                         },
                         password: {
                             type: 'string',
                             format: 'password',
-                            example: 'securePassword123'
-                        }
-                    }
+                            example: 'securePassword123',
+                        },
+                    },
                 },
                 RegisterRequestBody: {
                     type: 'object',
@@ -189,19 +190,21 @@ const swaggerOptions = {
                     properties: {
                         name: {
                             type: 'string',
-                            example: 'John Doe'
+                            example: 'John Doe',
                         },
                         email: {
                             type: 'string',
                             format: 'email',
-                            example: 'john.doe@example.com'
+                            example: 'john.doe@example.com',
                         },
                         password: {
                             type: 'string',
                             format: 'password',
-                            example: 'securePassword123'
-                        }
-                    }
+                            example: 'SecurePassword123!',
+                            description:
+                                'Must contain at least 8 characters, one uppercase, one lowercase, one number and one special character (@$!%*?&)',
+                        },
+                    },
                 },
             },
             securitySchemes: {
