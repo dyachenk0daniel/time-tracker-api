@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import cors from 'cors';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import logger from '@app/middlware/logger';
+import logger from '@app/middlewares/logger';
 import apiRouter from '@interfaces/api-router';
 import errorHandler from '@interfaces/middlewares/error-handler';
 import config from './config';
