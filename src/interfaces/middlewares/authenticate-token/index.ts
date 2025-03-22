@@ -18,7 +18,7 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = UserUtils.verifyToken(token);
+        const decoded = UserUtils.verifyAccessToken(token);
         req.body.userId = decoded.id;
 
         next();

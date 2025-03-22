@@ -16,6 +16,7 @@ function errorHandler(error: Error | HttpException, req: Request, res: Response,
         ErrorCode.InternalServerError,
         'An error occurred while processing your request.'
     );
+    console.log(error);
     res.status(HttpCode.InternalServerError).json(errorResponse);
 }
 

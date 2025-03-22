@@ -167,6 +167,42 @@ const swaggerOptions = {
                         },
                     },
                 },
+                LoginRequestBody: {
+                    type: 'object',
+                    required: ['email', 'password'],
+                    properties: {
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'user@example.com'
+                        },
+                        password: {
+                            type: 'string',
+                            format: 'password',
+                            example: 'securePassword123'
+                        }
+                    }
+                },
+                RegisterRequestBody: {
+                    type: 'object',
+                    required: ['name', 'email', 'password'],
+                    properties: {
+                        name: {
+                            type: 'string',
+                            example: 'John Doe'
+                        },
+                        email: {
+                            type: 'string',
+                            format: 'email',
+                            example: 'john.doe@example.com'
+                        },
+                        password: {
+                            type: 'string',
+                            format: 'password',
+                            example: 'securePassword123'
+                        }
+                    }
+                },
             },
             securitySchemes: {
                 bearerAuth: {

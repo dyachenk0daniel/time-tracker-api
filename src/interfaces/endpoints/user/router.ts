@@ -11,31 +11,45 @@ const userController = new UserController();
  * @swagger
  * /api/users/me:
  *   get:
- *     summary: Получение информации о текущем пользователе
- *     description: Возвращает детальную информацию о текущем пользователе, основываясь на переданном токене авторизации.
+ *     summary: Get current user info
+ *     description: Returns detailed information about the authenticated user
  *     tags:
  *       - User
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Данные пользователя успешно получены.
+ *         description: Successfully retrieved user data
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UserResponse'
  *       404:
- *         description: Пользователь не найден.
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               userNotFound:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: USER_NOT_FOUND
+ *                     message: User not found
  *       500:
- *         description: Внутренняя ошибка сервера.
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               serverError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: INTERNAL_SERVER_ERROR
+ *                     message: Internal server error
  */
 usersRouter.get('/me', authenticateToken, userController.getMe.bind(userController));
 
@@ -43,8 +57,8 @@ usersRouter.get('/me', authenticateToken, userController.getMe.bind(userControll
  * @swagger
  * /api/users/me:
  *   put:
- *     summary: Обновление информации о пользователе
- *     description: Обновляет данные текущего пользователя (имя и email). Требуется передать токен авторизации.
+ *     summary: Update current user information
+ *     description: Updates name and email of the authenticated user
  *     tags:
  *       - User
  *     security:
@@ -54,45 +68,54 @@ usersRouter.get('/me', authenticateToken, userController.getMe.bind(userControll
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *             properties:
- *               name:
- *                 type: string
- *                 description: Полное имя пользователя.
- *                 example: John Doe
- *               email:
- *                 type: string
- *                 format: email
- *                 description: Email пользователя.
- *                 example: john.doe@example.com
+ *             $ref: '#/components/schemas/UserUpdateRequest'
  *     responses:
  *       200:
- *         description: Данные пользователя успешно обновлены.
+ *         description: User updated successfully
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/UserResponse'
  *       400:
- *         description: Ошибка валидации или неверные данные.
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               validationError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: BAD_REQUEST
+ *                     message: Validation failed
+ *                     details: [{"msg":"Invalid email","param":"email"}]
  *       404:
- *         description: Пользователь не найден.
+ *         description: User not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               userNotFound:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: USER_NOT_FOUND
+ *                     message: User not found
  *       500:
- *         description: Внутренняя ошибка сервера.
+ *         description: Internal server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               serverError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: INTERNAL_SERVER_ERROR
+ *                     message: Internal server error
  */
 usersRouter.put(
     '/me',

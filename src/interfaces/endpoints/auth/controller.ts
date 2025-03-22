@@ -6,7 +6,7 @@ import { HttpException } from '@interfaces/response-models';
 import UserService from '@entities/user/service';
 import { UserModel } from '@entities/user/model';
 import UserUtils from '@entities/user/utils';
-import { LoginRequestBody, RegisterRequestBody } from './types';
+import { RegisterRequestBody } from './types';
 
 class AuthController extends RequestHandler {
     private readonly userService: UserService;
@@ -16,7 +16,7 @@ class AuthController extends RequestHandler {
         this.userService = new UserService();
     }
 
-    async login(req: Request<unknown, unknown, LoginRequestBody>, res: Response, next: NextFunction) {
+    async login(req: Request, res: Response, next: NextFunction) {
         try {
             const { email, password } = req.body;
             const user = await this.userService.getUserByEmail(email);
@@ -31,8 +31,10 @@ class AuthController extends RequestHandler {
                 throw new HttpException(HttpCode.Forbidden, ErrorCode.InvalidPassword, 'Invalid password.');
             }
 
-            const token = UserUtils.generateToken(user);
-            this.sendResponse(res, { token });
+            const accessToken = UserUtils.generateAccessToken(user);
+            const refreshToken = await UserUtils.generateRefreshToken(user.id);
+
+            this.sendResponse(res, { accessToken, refreshToken });
         } catch (error) {
             next(error);
         }
@@ -54,6 +56,44 @@ class AuthController extends RequestHandler {
             const newUser = await this.userService.createUser(name, email, password);
             const userModel = new UserModel(newUser);
             this.sendResponse(res, userModel.toResponse(), HttpCode.Created);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async refresh(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { refreshToken } = req.body;
+            if (!refreshToken) {
+                throw new HttpException(HttpCode.BadRequest, ErrorCode.BadRequest, 'Refresh token is required.');
+            }
+
+            const decoded = await UserUtils.verifyRefreshToken(refreshToken);
+            const user = await this.userService.getUserById(decoded.userId);
+
+            if (!user) {
+                throw new HttpException(HttpCode.Unauthorized, ErrorCode.UserNotFound, 'User not found.');
+            }
+
+            const newAccessToken = UserUtils.generateAccessToken(user);
+            const newRefreshToken = await UserUtils.generateRefreshToken(user.id);
+
+            this.sendResponse(res, { accessToken: newAccessToken, refreshToken: newRefreshToken });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async logout(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.body;
+
+            if (!userId) {
+                throw new HttpException(HttpCode.BadRequest, ErrorCode.BadRequest, 'User ID is required.');
+            }
+
+            await UserUtils.revokeRefreshToken(userId);
+            this.sendResponse(res, { message: 'Logged out successfully' });
         } catch (error) {
             next(error);
         }

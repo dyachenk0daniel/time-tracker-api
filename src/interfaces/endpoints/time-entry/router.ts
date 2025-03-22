@@ -16,33 +16,51 @@ const timeEntryController = new TimeEntryController();
  * @swagger
  * /api/time-entries:
  *   get:
- *     summary: Получение списка записей времени
- *     description: Возвращает список всех записей времени, связанных с текущим аутентифицированным пользователем.
- *     tags:
- *       - Time Entry
+ *     summary: Get all time entries
+ *     description: Retrieve list of all time entries for authenticated user
+ *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Список записей времени успешно получен.
+ *         description: Successfully retrieved time entries
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/TimeEntryResponse'
- *       401:
- *         description: Неавторизованный доступ (недействительный или отсутствующий токен)
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               activeAndCompleted:
+ *                 value:
+ *                   - id: "550e8400-e29b-41d4-a716-446655440000"
+ *                     userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                     description: "Morning coding session"
+ *                     startTime: "2023-12-01T09:00:00Z"
+ *                     endTime: "2023-12-01T12:00:00Z"
+ *                     createdAt: "2023-12-01T08:55:00Z"
+ *                     updatedAt: "2023-12-01T12:05:00Z"
+ *                   - id: "550e8400-e29b-41d4-a716-446655440001"
+ *                     userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                     description: "Afternoon meeting"
+ *                     startTime: "2023-12-01T14:00:00Z"
+ *                     endTime: null
+ *                     createdAt: "2023-12-01T13:45:00Z"
+ *                     updatedAt: null
  *       500:
- *         description: Внутренняя ошибка сервера
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               databaseError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "INTERNAL_SERVER_ERROR"
+ *                     message: "Failed to retrieve time entries"
+ *                     details: "Database connection timeout"
  */
 timeEntryRouter.get('/', authenticateToken, timeEntryController.getTimeEntries.bind(timeEntryController));
 
@@ -50,46 +68,62 @@ timeEntryRouter.get('/', authenticateToken, timeEntryController.getTimeEntries.b
  * @swagger
  * /api/time-entries/{id}:
  *   get:
- *     summary: Получение записи времени по ID
- *     description: Возвращает детальную информацию о записи времени по её идентификатору.
- *     tags:
- *       - Time Entry
+ *     summary: Get time entry by ID
+ *     description: Retrieve detailed information about specific time entry
+ *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Идентификатор записи времени (UUID).
  *         schema:
  *           type: string
+ *           format: uuid
+ *         examples:
+ *           validUUID:
+ *             value: "550e8400-e29b-41d4-a716-446655440000"
  *     responses:
  *       200:
- *         description: Запись времени успешно получена.
+ *         description: Time entry details
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/TimeEntryResponse'
- *       400:
- *         description: Ошибка валидации параметров запроса.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Неавторизованный доступ.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               activeEntry:
+ *                 value:
+ *                   id: "550e8400-e29b-41d4-a716-446655440000"
+ *                   userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   description: "Code review"
+ *                   startTime: "2023-12-01T16:00:00Z"
+ *                   endTime: null
+ *                   createdAt: "2023-12-01T16:05:00Z"
+ *                   updatedAt: null
+ *               completedEntry:
+ *                 value:
+ *                   id: "550e8400-e29b-41d4-a716-446655440001"
+ *                   userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   description: "Daily standup"
+ *                   startTime: "2023-12-01T10:00:00Z"
+ *                   endTime: "2023-12-01T10:15:00Z"
+ *                   createdAt: "2023-12-01T09:55:00Z"
+ *                   updatedAt: "2023-12-01T10:15:30Z"
  *       404:
- *         description: Запись времени не найдена.
+ *         description: Entry not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               notFound:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "TIME_ENTRY_NOT_FOUND"
+ *                     message: "Time entry with ID 550e8400-e29b-41d4-a716-446655440000 not found"
  *       500:
- *         description: Внутренняя ошибка сервера.
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
@@ -107,10 +141,9 @@ timeEntryRouter.get(
  * @swagger
  * /api/time-entries:
  *   post:
- *     summary: Создание новой записи времени
- *     description: Создает новую запись времени для текущего пользователя, принимая данные о проекте, затраченном времени и описании.
- *     tags:
- *       - Time Entry
+ *     summary: Create new time entry
+ *     description: Create a new time tracking record for authenticated user
+ *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -119,31 +152,71 @@ timeEntryRouter.get(
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/TimeEntryCreateRequest'
+ *           examples:
+ *             minimalRequest:
+ *               value:
+ *                 description: "Developed new feature"
+ *                 startTime: "2023-12-01T09:00:00Z"
+ *             fullRequest:
+ *               value:
+ *                 description: "Team meeting"
+ *                 startTime: "2023-12-01T14:00:00Z"
+ *                 endTime: "2023-12-01T15:30:00Z"
  *     responses:
  *       201:
- *         description: Запись времени успешно создана.
+ *         description: Time entry created
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/TimeEntryResponse'
+ *             examples:
+ *               successResponse:
+ *                 value:
+ *                   id: "550e8400-e29b-41d4-a716-446655440000"
+ *                   userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   description: "Developed new feature"
+ *                   startTime: "2023-12-01T09:00:00Z"
+ *                   endTime: null
+ *                   createdAt: "2023-12-01T09:05:23Z"
+ *                   updatedAt: null
  *       400:
- *         description: Неверные данные запроса.
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Неавторизованный доступ.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               invalidStartTime:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "BAD_REQUEST"
+ *                     message: "Validation failed"
+ *                     details:
+ *                       - msg: "Invalid ISO 8601 date format"
+ *                         param: "startTime"
+ *               missingDescription:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "BAD_REQUEST"
+ *                     message: "Validation failed"
+ *                     details:
+ *                       - msg: "Description is required"
+ *                         param: "description"
  *       500:
- *         description: Внутренняя ошибка сервера.
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               databaseError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "INTERNAL_SERVER_ERROR"
+ *                     message: "Could not save time entry"
  */
 timeEntryRouter.post(
     '/',
@@ -157,64 +230,73 @@ timeEntryRouter.post(
  * @swagger
  * /api/time-entries/{id}/stop:
  *   put:
- *     summary: Остановка записи времени
- *     description: Завершает запись времени, устанавливая время окончания записи для указанного идентификатора.
- *     tags:
- *       - Time Entry
+ *     summary: Stop active time entry
+ *     description: Mark end time for currently running time entry
+ *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Идентификатор записи времени (UUID).
  *         schema:
  *           type: string
+ *           format: uuid
  *     requestBody:
  *       required: true
  *       content:
  *         application/json:
  *           schema:
  *             type: object
- *             required:
- *               - endTime
+ *             required: [endTime]
  *             properties:
  *               endTime:
  *                 type: string
  *                 format: date-time
- *                 description: Время окончания записи в формате ISO 8601.
- *                 example: "2023-10-01T17:00:00Z"
+ *                 example: "2023-12-01T17:30:00Z"
  *     responses:
  *       200:
- *         description: Запись времени успешно обновлена (остановлена).
+ *         description: Time entry stopped
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/TimeEntryResponse'
+ *             examples:
+ *               stoppedEntry:
+ *                 value:
+ *                   id: "550e8400-e29b-41d4-a716-446655440000"
+ *                   userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   description: "Development work"
+ *                   startTime: "2023-12-01T14:00:00Z"
+ *                   endTime: "2023-12-01T17:30:00Z"
+ *                   createdAt: "2023-12-01T13:55:00Z"
+ *                   updatedAt: "2023-12-01T17:30:05Z"
  *       400:
- *         description: Ошибка валидации или неверные данные.
+ *         description: Validation error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *       401:
- *         description: Неавторизованный доступ.
+ *             examples:
+ *               invalidEndTime:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "BAD_REQUEST"
+ *                     message: "End time must be after start time"
+ *       409:
+ *         description: Conflict
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
- *       404:
- *         description: Запись времени не найдена.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *       500:
- *         description: Внутренняя ошибка сервера.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               alreadyStopped:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "TIME_ENTRY_COMPLETED"
+ *                     message: "Time entry already has end time"
  */
 timeEntryRouter.put(
     '/:id/stop',
@@ -228,48 +310,71 @@ timeEntryRouter.put(
  * @swagger
  * /api/time-entries/{id}:
  *   delete:
- *     summary: Удаление записи времени
- *     description: Удаляет запись времени по её идентификатору.
- *     tags:
- *       - Time Entry
+ *     summary: Delete time entry
+ *     description: Permanently remove specific time entry
+ *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: id
  *         required: true
- *         description: Идентификатор записи времени (UUID).
  *         schema:
  *           type: string
+ *           format: uuid
+ *         examples:
+ *           validUUID:
+ *             value: "550e8400-e29b-41d4-a716-446655440000"
  *     responses:
  *       200:
- *         description: Запись времени успешно удалена.
+ *         description: Time entry deleted
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
- *                 message:
- *                   type: string
- *                   example: "Time entry deleted successfully"
- *       401:
- *         description: Неавторизованный доступ.
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                       example: "Time entry deleted successfully"
+ *             examples:
+ *               successResponse:
+ *                 value:
+ *                   success: true
+ *                   data:
+ *                     message: "Deleted time entry 550e8400-e29b-41d4-a716-446655440000"
  *       404:
- *         description: Запись времени не найдена.
+ *         description: Entry not found
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               notFound:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "TIME_ENTRY_NOT_FOUND"
+ *                     message: "Time entry with ID 550e8400-e29b-41d4-a716-446655440000 not found"
  *       500:
- *         description: Внутренняя ошибка сервера.
+ *         description: Server error
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               deletionError:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "INTERNAL_SERVER_ERROR"
+ *                     message: "Failed to delete time entry"
+ *                     details: "Database constraint violation"
  */
 timeEntryRouter.delete(
     '/:id',
