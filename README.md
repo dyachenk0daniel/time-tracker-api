@@ -24,6 +24,7 @@ npm run dev
 
 - Node.js (>=14.x)
 - PostgreSQL (for database management)
+- Redis (for in memory database management)
 
 ### Getting Started
 
@@ -45,9 +46,14 @@ npm run dev
     ```
    HOST=localhost
    PORT=3000
-   DB_URL=your_database_connection_url
-   JWT_SECRET=your_jwt_secret_key
+   JWT_SECRET=super_secret_key
    JWT_EXPIRES_IN=1h
+   REFRESH_SECRET=another_secret_key
+   
+   # 7 days (in seconds)
+   REFRESH_EXPIRES_IN=604800
+   POSTGRESQL_URL=postgresql_connection_url
+   REDIS_URL=redis_connection_url
     ```
 
 4. Apply database migrations using Prisma:

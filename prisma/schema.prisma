@@ -4,20 +4,19 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DB_URL")
+  url      = env("POSTGRESQL_URL")
 }
 
 model User {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String    @db.VarChar(255)
-  email      String    @unique @db.VarChar(255)
-  password   String    @db.VarChar(255)
-  createdAt  DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt  DateTime? @db.Timestamptz(6) @map("updated_at")
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @db.VarChar(255)
+  email     String    @unique @db.VarChar(255)
+  password  String    @db.VarChar(255)
+  createdAt DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime? @db.Timestamptz(6) @map("updated_at")
 
   @@map("users")
 }
-
 
 model TimeEntry {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
