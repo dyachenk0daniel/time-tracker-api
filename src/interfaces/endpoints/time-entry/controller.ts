@@ -41,12 +41,8 @@ class TimeEntryController extends RequestHandler {
 
     async createTimeEntry(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, description, startTime } = req.body;
-            const newTimeEntry = await this.timeEntryService.createTimeEntry({
-                userId,
-                description,
-                startTime,
-            });
+            const { userId, description } = req.body;
+            const newTimeEntry = await this.timeEntryService.createTimeEntry(userId, description);
             this.sendResponse(res, newTimeEntry, HttpCode.Created);
         } catch (error) {
             next(error);
@@ -55,12 +51,9 @@ class TimeEntryController extends RequestHandler {
 
     async stopTimeEntry(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, endTime } = req.body;
+            const { userId } = req.body;
             const { id } = req.params;
-            const stoppedTimeEntry = await this.timeEntryService.updateTimeEntry(id, {
-                userId,
-                endTime,
-            });
+            const stoppedTimeEntry = await this.timeEntryService.stopTimeEntry(id, userId);
             this.sendResponse(res, stoppedTimeEntry);
         } catch (error) {
             next(error);

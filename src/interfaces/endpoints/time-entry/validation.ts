@@ -9,22 +9,9 @@ export const createTimeEntryValidationRules = [
         .isUUID()
         .withMessage('User ID must be a valid UUID'),
     body('description').notEmpty().withMessage('Description is required'),
-    body('startTime')
-        .notEmpty()
-        .withMessage('Start time is required')
-        .bail()
-        .isISO8601()
-        .withMessage('Start time must be a valid ISO 8601 date'),
-    body('endTime').optional().isISO8601().withMessage('End time must be a valid ISO 8601 date'),
 ];
 export const stopTimeEntryValidationRules = [
     param('id').isUUID().withMessage('ID must be a valid UUID'),
-    body('endTime')
-        .notEmpty()
-        .withMessage('End time is required')
-        .bail()
-        .isISO8601()
-        .withMessage('End time must be a valid ISO 8601 date'),
 ];
 export const deleteTimeEntryValidationRules = [
     param('id').isUUID().withMessage('ID must be a valid UUID')

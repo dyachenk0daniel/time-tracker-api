@@ -1,40 +1,84 @@
-import TimeEntryRepository from '@infrastructure/repositories/time-entry';
-import { CreateTimeEntry, TimeEntry, UpdateTimeEntry } from './types';
+import { TimeEntry } from './types';
 import { HttpException } from '@interfaces/response-models';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
+import { DateUtils } from '@shared/utils';
+import { PrismaClient } from '@prisma/client';
 
 class TimeEntryService {
-    private readonly timeEntryRepository: TimeEntryRepository;
+    private prisma: PrismaClient;
 
     constructor() {
-        this.timeEntryRepository = new TimeEntryRepository();
+        this.prisma = new PrismaClient();
     }
 
     async getTimeEntryById(id: string, userId: string): Promise<TimeEntry | null> {
-        return this.timeEntryRepository.getById(id, userId);
+        const timeEntry = await this.prisma.timeEntry.findUnique({
+            where: { id, userId },
+        });
+        return timeEntry ? DateUtils.convertDatesToISOStrings(timeEntry) : null;
     }
 
-    async createTimeEntry(data: CreateTimeEntry): Promise<TimeEntry> {
-        return this.timeEntryRepository.create(data);
+    async createTimeEntry(userId: string, description: string): Promise<TimeEntry> {
+        await this.stopAllTimeEntries(userId);
+
+        const timeEntry = await this.prisma.timeEntry.create({
+            data: {
+                userId,
+                description,
+                startTime: new Date(),
+                endTime: null,
+            },
+        });
+
+        return DateUtils.convertDatesToISOStrings(timeEntry);
     }
 
-    async updateTimeEntry(id: string, data: UpdateTimeEntry): Promise<TimeEntry> {
-        const timeEntry = await this.getTimeEntryById(id, data.userId);
+    async stopTimeEntry(id: string, userId: string): Promise<void> {
+        const timeEntry = await this.getTimeEntryById(id, userId);
 
         if (!timeEntry) {
             throw new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
         }
 
-        return this.timeEntryRepository.update(id, data);
+        this.prisma.timeEntry.updateMany({
+            where: {
+                userId,
+                endTime: null,
+                id: { not: id },
+            },
+            data: {
+                endTime: new Date(),
+                updatedAt: new Date(),
+            },
+        });
+    }
+
+    async stopAllTimeEntries(userId: string): Promise<void> {
+        this.prisma.timeEntry.updateMany({
+            where: {
+                userId,
+                endTime: null,
+            },
+            data: {
+                endTime: new Date(),
+                updatedAt: new Date(),
+            },
+        });
     }
 
     async deleteTimeEntry(id: string, userId: string): Promise<boolean> {
-        return this.timeEntryRepository.delete(id, userId);
+        const result = await this.prisma.timeEntry.delete({
+            where: { id, userId },
+        });
+        return Boolean(result);
     }
 
     async getAllTimeEntries(userId: string): Promise<TimeEntry[]> {
-        return this.timeEntryRepository.getAll(userId);
+        const timeEntries = await this.prisma.timeEntry.findMany({
+            where: { userId },
+        });
+        return timeEntries.map((timeEntry) => DateUtils.convertDatesToISOStrings(timeEntry));
     }
 }
 

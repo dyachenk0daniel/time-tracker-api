@@ -176,23 +176,7 @@ describe('timeEntryRouter', () => {
 
     describe('PUT /:id/stop', () => {
         it('should stop a time entry', async () => {
-            const mockTimeEntry: TimeEntry = {
-                id: mockTimeEntryId,
-                userId: '123e4567-e89b-12d3-a456-426614174000',
-                description: 'Test time entry',
-                startTime: '2023-12-01T12:00:00Z',
-                endTime: null,
-                createdAt: '2023-12-01T12:00:00Z',
-                updatedAt: null,
-            };
-
-            const updatedTimeEntry: TimeEntry = {
-                ...mockTimeEntry,
-                endTime: '2023-12-01T13:00:00Z',
-                updatedAt: '2023-12-01T13:00:00Z',
-            };
-
-            jest.mocked(TimeEntryService.prototype.updateTimeEntry).mockResolvedValue(updatedTimeEntry);
+            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockResolvedValue();
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)
@@ -201,12 +185,10 @@ describe('timeEntryRouter', () => {
 
             expect(response.status).toBe(HttpCode.Ok);
             expect(response.body.success).toBe(true);
-            expect(response.body.data).toHaveProperty('endTime', '2023-12-01T13:00:00Z');
-            expect(response.body.data).toHaveProperty('updatedAt', '2023-12-01T13:00:00Z');
         });
 
         it('should return 404 if time entry is not found', async () => {
-            jest.mocked(TimeEntryService.prototype.updateTimeEntry).mockRejectedValue(
+            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockRejectedValue(
                 new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found')
             );
 
@@ -222,7 +204,7 @@ describe('timeEntryRouter', () => {
         });
 
         it('should return 500 if there is a server error', async () => {
-            jest.mocked(TimeEntryService.prototype.updateTimeEntry).mockRejectedValue(new Error('Server error'));
+            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockRejectedValue(new Error('Server error'));
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)

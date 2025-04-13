@@ -1,5 +1,5 @@
 import { DateUtils, ObjectUtils, StringUtils } from '@shared/utils';
-import { CreateUser, User, UserResponse } from './types';
+import { User, UserResponse } from './types';
 
 export class UserModel {
     id: string;
@@ -25,21 +25,7 @@ export class UserModel {
         this.updatedAt = updatedAt;
     }
 
-    patch(updatedData: Partial<User>) {
-        Object.assign(this, updatedData);
-
-        return this;
-    }
-
     toResponse(): UserResponse {
         return ObjectUtils.omit(this, ['password']);
-    }
-
-    toCreation(): CreateUser {
-        return ObjectUtils.pick(this, ['name', 'email', 'password']);
-    }
-
-    toPlain(): User {
-        return JSON.parse(JSON.stringify(this));
     }
 }
