@@ -75,6 +75,17 @@ class TimeEntryController extends RequestHandler {
             next(error);
         }
     }
+
+    async getActiveTimeEntry(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.body;
+            const activeTimeEntry = await this.timeEntryService.getActiveTimeEntry(userId);
+
+            this.sendResponse(res, activeTimeEntry);
+        } catch (error) {
+            next(error);
+        }
+    }
 }
 
 export default TimeEntryController;

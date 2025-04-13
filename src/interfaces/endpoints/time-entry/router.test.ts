@@ -263,4 +263,54 @@ describe('timeEntryRouter', () => {
             expect(response.body.error.code).toBe(ErrorCode.InternalServerError);
         });
     });
+
+    describe('GET /active', () => {
+        it('should return the active time entry', async () => {
+            const mockActiveTimeEntry: TimeEntry = {
+                id: mockTimeEntryId,
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Active task',
+                startTime: '2023-12-01T12:00:00Z',
+                endTime: null,
+                createdAt: '2023-12-01T12:00:00Z',
+                updatedAt: null,
+            };
+
+            jest.mocked(TimeEntryService.prototype.getActiveTimeEntry).mockResolvedValue(mockActiveTimeEntry);
+
+            const response = await request(app)
+                .get('/api/time-entries/active')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.Ok);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data).toHaveProperty('id', mockTimeEntryId);
+            expect(response.body.data).toHaveProperty('description', 'Active task');
+            expect(response.body.data).toHaveProperty('endTime', null);
+        });
+
+        it('should return null if no active time entry exists', async () => {
+            jest.mocked(TimeEntryService.prototype.getActiveTimeEntry).mockResolvedValue(null);
+
+            const response = await request(app)
+                .get('/api/time-entries/active')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.Ok);
+            expect(response.body.success).toBe(true);
+            expect(response.body.data).toBeNull();
+        });
+
+        it('should return 500 if there is a server error', async () => {
+            jest.mocked(TimeEntryService.prototype.getActiveTimeEntry).mockRejectedValue(new Error('Server error'));
+
+            const response = await request(app)
+                .get('/api/time-entries/active')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.InternalServerError);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error).toHaveProperty('code', ErrorCode.InternalServerError);
+        });
+    });
 });

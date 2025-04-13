@@ -66,6 +66,51 @@ timeEntryRouter.get('/', authenticateToken, timeEntryController.getTimeEntries.b
 
 /**
  * @swagger
+ * /api/time-entries/active:
+ *   get:
+ *     summary: Get active time entry
+ *     description: Retrieve the currently active time entry (with no end time) for the authenticated user
+ *     tags: [Time Entry]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved active time entry or null if none exists
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: '#/components/schemas/TimeEntryResponse'
+ *                 - type: null
+ *             examples:
+ *               activeEntry:
+ *                 value:
+ *                   id: "550e8400-e29b-41d4-a716-446655440000"
+ *                   userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                   description: "Current task"
+ *                   startTime: "2023-12-01T09:00:00Z"
+ *                   endTime: null
+ *                   createdAt: "2023-12-01T09:00:00Z"
+ *                   updatedAt: null
+ *               noActiveEntry:
+ *                 value: null
+ *       401:
+ *         description: Unauthorized
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+timeEntryRouter.get('/active', authenticateToken, timeEntryController.getActiveTimeEntry.bind(timeEntryController));
+
+/**
+ * @swagger
  * /api/time-entries/{id}:
  *   get:
  *     summary: Get time entry by ID

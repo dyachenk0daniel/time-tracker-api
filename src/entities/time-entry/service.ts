@@ -80,6 +80,16 @@ class TimeEntryService {
         });
         return timeEntries.map((timeEntry) => DateUtils.convertDatesToISOStrings(timeEntry));
     }
+
+    async getActiveTimeEntry(userId: string): Promise<TimeEntry | null> {
+        const timeEntry = await this.prisma.timeEntry.findFirst({
+            where: {
+                userId,
+                endTime: null,
+            },
+        });
+        return timeEntry ? DateUtils.convertDatesToISOStrings(timeEntry) : null;
+    }
 }
 
 export default TimeEntryService;
