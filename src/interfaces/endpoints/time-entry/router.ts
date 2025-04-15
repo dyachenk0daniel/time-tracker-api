@@ -276,7 +276,7 @@ timeEntryRouter.post(
  * /api/time-entries/{id}/stop:
  *   put:
  *     summary: Stop active time entry
- *     description: Mark end time for currently running time entry
+ *     description: Mark the current time as the end time for a running time entry
  *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
@@ -287,18 +287,9 @@ timeEntryRouter.post(
  *         schema:
  *           type: string
  *           format: uuid
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required: [endTime]
- *             properties:
- *               endTime:
- *                 type: string
- *                 format: date-time
- *                 example: "2023-12-01T17:30:00Z"
+ *         examples:
+ *           validUUID:
+ *             value: "550e8400-e29b-41d4-a716-446655440000"
  *     responses:
  *       200:
  *         description: Time entry stopped
@@ -323,14 +314,30 @@ timeEntryRouter.post(
  *             schema:
  *               $ref: '#/components/schemas/Error'
  *             examples:
- *               invalidEndTime:
+ *               invalidId:
  *                 value:
  *                   success: false
  *                   error:
  *                     code: "BAD_REQUEST"
- *                     message: "End time must be after start time"
+ *                     message: "Validation failed"
+ *                     details:
+ *                       - msg: "ID must be a valid UUID"
+ *                         param: "id"
+ *       404:
+ *         description: Time entry not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *             examples:
+ *               notFound:
+ *                 value:
+ *                   success: false
+ *                   error:
+ *                     code: "TIME_ENTRY_NOT_FOUND"
+ *                     message: "Time entry not found"
  *       409:
- *         description: Conflict
+ *         description: Time entry already stopped
  *         content:
  *           application/json:
  *             schema:
@@ -340,8 +347,14 @@ timeEntryRouter.post(
  *                 value:
  *                   success: false
  *                   error:
- *                     code: "TIME_ENTRY_COMPLETED"
- *                     message: "Time entry already has end time"
+ *                     code: "TIME_ENTRY_ALREADY_STOPPED"
+ *                     message: "Time entry is already stopped"
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  */
 timeEntryRouter.put(
     '/:id/stop',

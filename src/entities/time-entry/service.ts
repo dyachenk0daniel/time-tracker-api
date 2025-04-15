@@ -34,24 +34,34 @@ class TimeEntryService {
         return DateUtils.convertDatesToISOStrings(timeEntry);
     }
 
-    async stopTimeEntry(id: string, userId: string): Promise<void> {
+    async stopTimeEntry(id: string, userId: string): Promise<TimeEntry> {
         const timeEntry = await this.getTimeEntryById(id, userId);
 
         if (!timeEntry) {
             throw new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
         }
 
-        this.prisma.timeEntry.updateMany({
+        if (timeEntry.endTime) {
+            throw new HttpException(
+                HttpCode.BadRequest,
+                ErrorCode.TimeEntryAlreadyStopped,
+                'Time entry is already stopped'
+            );
+        }
+
+        const updatedTimeEntry = await this.prisma.timeEntry.update({
             where: {
+                id,
                 userId,
                 endTime: null,
-                id: { not: id },
             },
             data: {
                 endTime: new Date(),
                 updatedAt: new Date(),
             },
         });
+
+        return DateUtils.convertDatesToISOStrings(updatedTimeEntry)
     }
 
     async stopAllTimeEntries(userId: string): Promise<void> {

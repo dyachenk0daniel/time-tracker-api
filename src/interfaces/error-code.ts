@@ -8,4 +8,5 @@ export enum ErrorCode {
     InvalidOrExpiredToken = 'INVALID_OR_EXPIRED_TOKEN',
     TimeEntryNotFound = 'TIME_ENTRY_NOT_FOUND',
     TooManyAttempts = 'TOO_MANY_ATTEMPTS',
+    TimeEntryAlreadyStopped = 'TIME_ENTRY_ALREADY_STOPPED',
 }

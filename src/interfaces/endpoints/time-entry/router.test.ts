@@ -175,16 +175,31 @@ describe('timeEntryRouter', () => {
     });
 
     describe('PUT /:id/stop', () => {
-        it('should stop a time entry', async () => {
-            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockResolvedValue();
+        it('should stop a time entry and return updated entry', async () => {
+            const mockTimeEntry: TimeEntry = {
+                id: mockTimeEntryId,
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Test time entry',
+                startTime: '2023-12-01T12:00:00Z',
+                endTime: '2023-12-01T13:00:00Z',
+                createdAt: '2023-12-01T12:00:00Z',
+                updatedAt: '2023-12-01T13:00:00Z',
+            };
+
+            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockResolvedValue(mockTimeEntry);
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)
-                .send({ endTime: '2023-12-01T13:00:00Z' })
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.Ok);
             expect(response.body.success).toBe(true);
+            expect(response.body.data).toHaveProperty('id', mockTimeEntryId);
+            expect(response.body.data).toHaveProperty('description', 'Test time entry');
+            expect(response.body.data).toHaveProperty('startTime', '2023-12-01T12:00:00Z');
+            expect(response.body.data).toHaveProperty('endTime', '2023-12-01T13:00:00Z');
+            expect(response.body.data).toHaveProperty('createdAt', '2023-12-01T12:00:00Z');
+            expect(response.body.data).toHaveProperty('updatedAt', '2023-12-01T13:00:00Z');
         });
 
         it('should return 404 if time entry is not found', async () => {
@@ -194,7 +209,6 @@ describe('timeEntryRouter', () => {
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)
-                .send({ endTime: '2023-12-01T13:00:00Z' })
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.NotFound);
@@ -203,12 +217,40 @@ describe('timeEntryRouter', () => {
             expect(response.body.error).toHaveProperty('message', 'Time entry not found');
         });
 
+        it('should return 409 if time entry is already stopped', async () => {
+            jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockRejectedValue(
+                new HttpException(
+                    HttpCode.BadRequest,
+                    ErrorCode.TimeEntryAlreadyStopped,
+                    'Time entry is already stopped'
+                )
+            );
+
+            const response = await request(app)
+                .put(`/api/time-entries/${mockTimeEntryId}/stop`)
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.BadRequest);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error).toHaveProperty('code', ErrorCode.TimeEntryAlreadyStopped);
+            expect(response.body.error).toHaveProperty('message', 'Time entry is already stopped');
+        });
+
+        it('should return 400 for invalid UUID format', async () => {
+            const response = await request(app)
+                .put('/api/time-entries/invalid-id/stop')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.BadRequest);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error.details[0].msg).toBe('ID must be a valid UUID');
+        });
+
         it('should return 500 if there is a server error', async () => {
             jest.mocked(TimeEntryService.prototype.stopTimeEntry).mockRejectedValue(new Error('Server error'));
 
             const response = await request(app)
                 .put(`/api/time-entries/${mockTimeEntryId}/stop`)
-                .send({ endTime: '2023-12-01T13:00:00Z' })
                 .set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.InternalServerError);
