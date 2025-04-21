@@ -64,8 +64,8 @@ class TimeEntryService {
         return DateUtils.convertDatesToISOStrings(updatedTimeEntry)
     }
 
-    async stopAllTimeEntries(userId: string): Promise<void> {
-        this.prisma.timeEntry.updateMany({
+    async stopAllTimeEntries(userId: string): Promise<number> {
+        const result = await this.prisma.timeEntry.updateMany({
             where: {
                 userId,
                 endTime: null,
@@ -75,6 +75,8 @@ class TimeEntryService {
                 updatedAt: new Date(),
             },
         });
+
+        return result.count;
     }
 
     async deleteTimeEntry(id: string, userId: string): Promise<boolean> {
