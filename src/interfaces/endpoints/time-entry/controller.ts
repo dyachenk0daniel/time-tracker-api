@@ -41,7 +41,8 @@ class TimeEntryController extends RequestHandler {
 
     async createTimeEntry(req: Request, res: Response, next: NextFunction) {
         try {
-            const { userId, description } = req.body;
+            const { userId } = req.body;
+            const { description } = req.body;
             const newTimeEntry = await this.timeEntryService.createTimeEntry(userId, description);
             this.sendResponse(res, newTimeEntry, HttpCode.Created);
         } catch (error) {
