@@ -10,8 +10,8 @@ class UserService {
     private readonly bcryptSaltRounds = 10;
     private readonly prisma: PrismaClient;
 
-    constructor() {
-        this.prisma = new PrismaClient();
+    constructor(prisma: PrismaClient) {
+        this.prisma = prisma;
     }
 
     async getUserByEmail(email: string): Promise<User | null> {

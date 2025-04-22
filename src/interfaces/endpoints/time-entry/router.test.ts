@@ -11,6 +11,7 @@ import { HttpException } from '@interfaces/response-models';
 
 jest.mock('@interfaces/middlewares/authenticate-token');
 jest.mock('@entities/time-entry/service');
+jest.mock('ioredis');
 
 describe('timeEntryRouter', () => {
     let app: Express;

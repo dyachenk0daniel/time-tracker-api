@@ -1,11 +1,15 @@
 import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
 import { authenticateToken } from '@interfaces/middlewares/authenticate-token';
 import UserController from '@interfaces/endpoints/user/controller';
 import { updateUserValidationRules } from '@interfaces/endpoints/user/validation';
 import validateRequest from '@interfaces/middlewares/validate-request';
+import UserService from '@entities/user/service';
 
 const usersRouter = Router();
-const userController = new UserController();
+const prisma = new PrismaClient();
+const userService = new UserService(prisma);
+const userController = new UserController(userService);
 
 /**
  * @swagger

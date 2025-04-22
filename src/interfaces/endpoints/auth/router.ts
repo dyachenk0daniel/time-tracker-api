@@ -5,9 +5,13 @@ import { loginValidationRules, registerValidationRules } from './validation';
 import validateRequest from '@interfaces/middlewares/validate-request';
 import { ErrorCode } from '@interfaces/error-code';
 import { ErrorBody } from '@interfaces/response-models';
+import { PrismaClient } from '@prisma/client';
+import UserService from '@entities/user/service';
 
 const authRouter = Router();
-const authController = new AuthController();
+const prisma = new PrismaClient();
+const userService = new UserService(prisma);
+const authController = new AuthController(userService);
 
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes

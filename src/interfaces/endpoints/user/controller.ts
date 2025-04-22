@@ -9,9 +9,9 @@ import { UserModel } from '@entities/user/model';
 class UserController extends RequestHandler {
     private readonly userService: UserService;
 
-    constructor() {
+    constructor(userService: UserService) {
         super();
-        this.userService = new UserService();
+        this.userService = userService;
     }
 
     async getMe(req: Request, res: Response, next: NextFunction) {

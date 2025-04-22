@@ -11,9 +11,9 @@ import { RegisterRequestBody } from './types';
 class AuthController extends RequestHandler {
     private readonly userService: UserService;
 
-    constructor() {
+    constructor(userService: UserService) {
         super();
-        this.userService = new UserService();
+        this.userService = userService;
     }
 
     async login(req: Request, res: Response, next: NextFunction) {

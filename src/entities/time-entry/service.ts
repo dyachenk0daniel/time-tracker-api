@@ -6,10 +6,10 @@ import { DateUtils } from '@shared/utils';
 import { PrismaClient } from '@prisma/client';
 
 class TimeEntryService {
-    private prisma: PrismaClient;
+    private readonly prisma: PrismaClient;
 
-    constructor() {
-        this.prisma = new PrismaClient();
+    constructor(prisma: PrismaClient) {
+        this.prisma = prisma;
     }
 
     async getTimeEntryById(id: string, userId: string): Promise<TimeEntry | null> {

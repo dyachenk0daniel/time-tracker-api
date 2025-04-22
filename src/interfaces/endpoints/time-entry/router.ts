@@ -8,9 +8,13 @@ import {
     getTimeEntryByIdValidationRules,
     stopTimeEntryValidationRules,
 } from './validation';
+import { PrismaClient } from '@prisma/client';
+import TimeEntryService from '@entities/time-entry/service';
 
 const timeEntryRouter = Router();
-const timeEntryController = new TimeEntryController();
+const prisma = new PrismaClient();
+const timeEntryService = new TimeEntryService(prisma);
+const timeEntryController = new TimeEntryController(timeEntryService);
 
 /**
  * @swagger

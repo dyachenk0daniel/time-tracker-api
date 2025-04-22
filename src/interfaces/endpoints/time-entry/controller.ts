@@ -8,9 +8,9 @@ import TimeEntryService from '@entities/time-entry/service';
 class TimeEntryController extends RequestHandler {
     private readonly timeEntryService: TimeEntryService;
 
-    constructor() {
+    constructor(timeEntryService: TimeEntryService) {
         super();
-        this.timeEntryService = new TimeEntryService();
+        this.timeEntryService = timeEntryService;
     }
 
     async getTimeEntries(req: Request, res: Response, next: NextFunction) {
