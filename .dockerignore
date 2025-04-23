@@ -1,0 +1,9 @@
+node_modules
+dist
+db
+.env
+prisma/migrations
+logs
+coverage
+api_tests
+.idea
