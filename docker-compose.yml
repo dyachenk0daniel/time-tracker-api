@@ -1,0 +1,58 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - JWT_SECRET=super-secret-key
+      - JWT_EXPIRES_IN=15m
+      - REFRESH_SECRET=another-secret-key
+      - REFRESH_EXPIRES_IN=604800
+      - POSTGRESQL_URL=postgresql://postgres:123@db:5432/postgres
+      - REDIS_URL=redis://redis:6379
+    networks:
+      - app-network
+
+  db:
+    image: postgres:16
+    environment:
+      - POSTGRES_PASSWORD=123
+      - POSTGRES_DB=postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+networks:
+  app-network:
+    external: true
+    name: app-network
+
+volumes:
+  postgres_data:
