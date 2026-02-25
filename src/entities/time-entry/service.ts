@@ -86,11 +86,26 @@ class TimeEntryService {
         return Boolean(result);
     }
 
-    async getAllTimeEntries(userId: string): Promise<TimeEntry[]> {
-        const timeEntries = await this.prisma.timeEntry.findMany({
-            where: { userId },
-        });
-        return timeEntries.map((timeEntry) => DateUtils.convertDatesToISOStrings(timeEntry));
+    async getAllTimeEntries(
+        userId: string,
+        page: number,
+        limit: number
+    ): Promise<{ items: TimeEntry[]; total: number; page: number; limit: number }> {
+        const [timeEntries, total] = await Promise.all([
+            this.prisma.timeEntry.findMany({
+                where: { userId },
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+            }),
+            this.prisma.timeEntry.count({ where: { userId } }),
+        ]);
+        return {
+            items: timeEntries.map((timeEntry) => DateUtils.convertDatesToISOStrings(timeEntry)),
+            total,
+            page,
+            limit,
+        };
     }
 
     async getActiveTimeEntry(userId: string): Promise<TimeEntry | null> {

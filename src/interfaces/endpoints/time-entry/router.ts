@@ -5,6 +5,7 @@ import TimeEntryController from './controller';
 import {
     createTimeEntryValidationRules,
     deleteTimeEntryValidationRules,
+    getTimeEntriesValidationRules,
     getTimeEntryByIdValidationRules,
     stopTimeEntryValidationRules,
 } from './validation';
@@ -21,36 +22,75 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  * /api/time-entries:
  *   get:
  *     summary: Get all time entries
- *     description: Retrieve list of all time entries for authenticated user
+ *     description: Retrieve paginated list of time entries for authenticated user
  *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
  *         description: Successfully retrieved time entries
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/TimeEntryResponse'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/TimeEntryResponse'
+ *                     total:
+ *                       type: integer
+ *                       example: 42
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
  *             examples:
- *               activeAndCompleted:
+ *               paginatedResult:
  *                 value:
- *                   - id: "550e8400-e29b-41d4-a716-446655440000"
- *                     userId: "123e4567-e89b-12d3-a456-426614174000"
- *                     description: "Morning coding session"
- *                     startTime: "2023-12-01T09:00:00Z"
- *                     endTime: "2023-12-01T12:00:00Z"
- *                     createdAt: "2023-12-01T08:55:00Z"
- *                     updatedAt: "2023-12-01T12:05:00Z"
- *                   - id: "550e8400-e29b-41d4-a716-446655440001"
- *                     userId: "123e4567-e89b-12d3-a456-426614174000"
- *                     description: "Afternoon meeting"
- *                     startTime: "2023-12-01T14:00:00Z"
- *                     endTime: null
- *                     createdAt: "2023-12-01T13:45:00Z"
- *                     updatedAt: null
+ *                   success: true
+ *                   data:
+ *                     items:
+ *                       - id: "550e8400-e29b-41d4-a716-446655440000"
+ *                         userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                         description: "Morning coding session"
+ *                         startTime: "2023-12-01T09:00:00Z"
+ *                         endTime: "2023-12-01T12:00:00Z"
+ *                         createdAt: "2023-12-01T08:55:00Z"
+ *                         updatedAt: "2023-12-01T12:05:00Z"
+ *                     total: 42
+ *                     page: 1
+ *                     limit: 10
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Server error
  *         content:
@@ -66,7 +106,13 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  *                     message: "Failed to retrieve time entries"
  *                     details: "Database connection timeout"
  */
-timeEntryRouter.get('/', authenticateToken, timeEntryController.getTimeEntries.bind(timeEntryController));
+timeEntryRouter.get(
+    '/',
+    authenticateToken,
+    getTimeEntriesValidationRules,
+    validateRequest,
+    timeEntryController.getTimeEntries.bind(timeEntryController)
+);
 
 /**
  * @swagger

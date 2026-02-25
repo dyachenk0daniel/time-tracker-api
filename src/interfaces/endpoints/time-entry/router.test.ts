@@ -85,39 +85,107 @@ describe('timeEntryRouter', () => {
     });
 
     describe('GET /', () => {
-        it('should return a list of time entries', async () => {
-            const mockTimeEntries: TimeEntry[] = [
-                {
-                    id: '123e4567-e89b-12d3-a456-426614174001',
-                    userId: '123e4567-e89b-12d3-a456-426614174000',
-                    description: 'Test time entry 1',
-                    startTime: '2023-12-01T12:00:00Z',
-                    endTime: '2023-12-01T13:00:00Z',
-                    createdAt: '2023-12-01T12:00:00Z',
-                    updatedAt: '2023-12-01T12:00:00Z',
-                },
-                {
-                    id: '123e4567-e89b-12d3-a456-426614174002',
-                    userId: '123e4567-e89b-12d3-a456-426614174000',
-                    description: 'Test time entry 2',
-                    startTime: '2023-12-02T12:00:00Z',
-                    endTime: '2023-12-02T13:00:00Z',
-                    createdAt: '2023-12-02T12:00:00Z',
-                    updatedAt: '2023-12-02T12:00:00Z',
-                },
-            ];
+        const mockTimeEntries: TimeEntry[] = [
+            {
+                id: '123e4567-e89b-12d3-a456-426614174001',
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Test time entry 1',
+                startTime: '2023-12-01T12:00:00Z',
+                endTime: '2023-12-01T13:00:00Z',
+                createdAt: '2023-12-01T12:00:00Z',
+                updatedAt: '2023-12-01T12:00:00Z',
+            },
+            {
+                id: '123e4567-e89b-12d3-a456-426614174002',
+                userId: '123e4567-e89b-12d3-a456-426614174000',
+                description: 'Test time entry 2',
+                startTime: '2023-12-02T12:00:00Z',
+                endTime: '2023-12-02T13:00:00Z',
+                createdAt: '2023-12-02T12:00:00Z',
+                updatedAt: '2023-12-02T12:00:00Z',
+            },
+        ];
 
-            jest.mocked(TimeEntryService.prototype.getAllTimeEntries).mockResolvedValue(mockTimeEntries);
+        it('should return paginated time entries with default page and limit', async () => {
+            jest.mocked(TimeEntryService.prototype.getAllTimeEntries).mockResolvedValue({
+                items: mockTimeEntries,
+                total: 2,
+                page: 1,
+                limit: 10,
+            });
 
             const response = await request(app).get('/api/time-entries').set('Authorization', 'Bearer valid_token');
 
             expect(response.status).toBe(HttpCode.Ok);
             expect(response.body.success).toBe(true);
-            expect(response.body.data).toHaveLength(2);
-            expect(response.body.data[0]).toHaveProperty('id', '123e4567-e89b-12d3-a456-426614174001');
-            expect(response.body.data[0]).toHaveProperty('description', 'Test time entry 1');
-            expect(response.body.data[1]).toHaveProperty('id', '123e4567-e89b-12d3-a456-426614174002');
-            expect(response.body.data[1]).toHaveProperty('description', 'Test time entry 2');
+            expect(response.body.data).toHaveProperty('total', 2);
+            expect(response.body.data).toHaveProperty('page', 1);
+            expect(response.body.data).toHaveProperty('limit', 10);
+            expect(response.body.data.items).toHaveLength(2);
+            expect(response.body.data.items[0]).toHaveProperty('id', '123e4567-e89b-12d3-a456-426614174001');
+            expect(response.body.data.items[0]).toHaveProperty('description', 'Test time entry 1');
+            expect(response.body.data.items[1]).toHaveProperty('id', '123e4567-e89b-12d3-a456-426614174002');
+            expect(response.body.data.items[1]).toHaveProperty('description', 'Test time entry 2');
+            expect(TimeEntryService.prototype.getAllTimeEntries).toHaveBeenCalledWith(
+                '123e4567-e89b-12d3-a456-426614174000',
+                1,
+                10
+            );
+        });
+
+        it('should pass custom page and limit to the service', async () => {
+            jest.mocked(TimeEntryService.prototype.getAllTimeEntries).mockResolvedValue({
+                items: mockTimeEntries,
+                total: 42,
+                page: 3,
+                limit: 5,
+            });
+
+            const response = await request(app)
+                .get('/api/time-entries?page=3&limit=5')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.Ok);
+            expect(response.body.data).toHaveProperty('total', 42);
+            expect(response.body.data).toHaveProperty('page', 3);
+            expect(response.body.data).toHaveProperty('limit', 5);
+            expect(TimeEntryService.prototype.getAllTimeEntries).toHaveBeenCalledWith(
+                '123e4567-e89b-12d3-a456-426614174000',
+                3,
+                5
+            );
+        });
+
+        it('should return 400 if page is not a positive integer', async () => {
+            const response = await request(app)
+                .get('/api/time-entries?page=0')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.BadRequest);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error.code).toBe(ErrorCode.BadRequest);
+            expect(response.body.error.details[0].msg).toBe('Page must be a positive integer');
+        });
+
+        it('should return 400 if limit exceeds maximum', async () => {
+            const response = await request(app)
+                .get('/api/time-entries?limit=101')
+                .set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.BadRequest);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error.code).toBe(ErrorCode.BadRequest);
+            expect(response.body.error.details[0].msg).toBe('Limit must be an integer between 1 and 100');
+        });
+
+        it('should return 500 if there is a server error', async () => {
+            jest.mocked(TimeEntryService.prototype.getAllTimeEntries).mockRejectedValue(new Error('Server error'));
+
+            const response = await request(app).get('/api/time-entries').set('Authorization', 'Bearer valid_token');
+
+            expect(response.status).toBe(HttpCode.InternalServerError);
+            expect(response.body.success).toBe(false);
+            expect(response.body.error).toHaveProperty('code', ErrorCode.InternalServerError);
         });
     });
 
