@@ -1,4 +1,6 @@
 import { Router } from 'express';
+import { PrismaClient } from '@prisma/client';
+import TimeEntryService from '@entities/time-entry/service';
 import { authenticateToken } from '@interfaces/middlewares/authenticate-token';
 import validateRequest from '@interfaces/middlewares/validate-request';
 import TimeEntryController from './controller';
@@ -10,8 +12,6 @@ import {
     getTimeEntryByIdValidationRules,
     stopTimeEntryValidationRules,
 } from './validation';
-import { PrismaClient } from '@prisma/client';
-import TimeEntryService from '@entities/time-entry/service';
 
 const timeEntryRouter = Router();
 const prisma = new PrismaClient();

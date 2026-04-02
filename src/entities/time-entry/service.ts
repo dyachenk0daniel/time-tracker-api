@@ -1,8 +1,13 @@
-import { TimeEntry, TimeEntryGroup } from './types';
-import { HttpException } from '@interfaces/response-models';
-import HttpCode from '@interfaces/http-code';
-import { ErrorCode } from '@interfaces/error-code';
 import { PrismaClient, TimeEntry as PrismaTimeEntry, TimeEntryGroup as PrismaTimeEntryGroup } from '@prisma/client';
+import { ErrorCode } from '@interfaces/error-code';
+import HttpCode from '@interfaces/http-code';
+import { HttpException } from '@interfaces/response-models';
+import { PaginatedResult, TimeEntry, TimeEntryGroup } from './types';
+
+type PrismaTimeEntryGroupWithRelations = PrismaTimeEntryGroup & {
+    _count: { entries: number };
+    entries: PrismaTimeEntry[];
+};
 
 class TimeEntryService {
     private readonly prisma: PrismaClient;
@@ -17,19 +22,19 @@ class TimeEntryService {
             groupId: entry.groupId,
             description: entry.description,
             startTime: entry.startTime.toISOString(),
-            endTime: entry.endTime ? entry.endTime.toISOString() : null,
+            endTime: entry.endTime?.toISOString() ?? null,
         };
     }
 
-    private toTimeEntryGroup(
-        group: PrismaTimeEntryGroup & { _count: { entries: number }; entries: PrismaTimeEntry[] }
-    ): TimeEntryGroup {
+    private toTimeEntryGroup(group: PrismaTimeEntryGroupWithRelations): TimeEntryGroup {
+        const hasSingleEntry = group._count.entries === 1;
+
         return {
             id: group.id,
             userId: group.userId,
             description: group.description,
             entriesCount: group._count.entries,
-            entry: group._count.entries === 1 ? this.toTimeEntry(group.entries[0]) : null,
+            entry: hasSingleEntry ? this.toTimeEntry(group.entries[0]) : null,
         };
     }
 
@@ -37,21 +42,22 @@ class TimeEntryService {
         const timeEntry = await this.prisma.timeEntry.findFirst({
             where: { id, group: { userId } },
         });
+
         return timeEntry ? this.toTimeEntry(timeEntry) : null;
     }
 
     async createTimeEntry(userId: string, description: string): Promise<TimeEntry> {
         await this.stopAllTimeEntries(userId);
 
-        let group = await this.prisma.timeEntryGroup.findFirst({
+        const existingGroup = await this.prisma.timeEntryGroup.findFirst({
             where: { userId, description },
         });
 
-        if (!group) {
-            group = await this.prisma.timeEntryGroup.create({
+        const group =
+            existingGroup ??
+            (await this.prisma.timeEntryGroup.create({
                 data: { userId, description },
-            });
-        }
+            }));
 
         const timeEntry = await this.prisma.timeEntry.create({
             data: {
@@ -72,7 +78,9 @@ class TimeEntryService {
             throw new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry not found');
         }
 
-        if (timeEntry.endTime) {
+        const isAlreadyStopped = timeEntry.endTime !== null;
+
+        if (isAlreadyStopped) {
             throw new HttpException(
                 HttpCode.BadRequest,
                 ErrorCode.TimeEntryAlreadyStopped,
@@ -80,27 +88,20 @@ class TimeEntryService {
             );
         }
 
+        const now = new Date();
         const updatedTimeEntry = await this.prisma.timeEntry.update({
             where: { id },
-            data: {
-                endTime: new Date(),
-                updatedAt: new Date(),
-            },
+            data: { endTime: now, updatedAt: now },
         });
 
         return this.toTimeEntry(updatedTimeEntry);
     }
 
     async stopAllTimeEntries(userId: string): Promise<number> {
+        const now = new Date();
         const result = await this.prisma.timeEntry.updateMany({
-            where: {
-                endTime: null,
-                group: { userId },
-            },
-            data: {
-                endTime: new Date(),
-                updatedAt: new Date(),
-            },
+            where: { endTime: null, group: { userId } },
+            data: { endTime: now, updatedAt: now },
         });
 
         return result.count;
@@ -117,18 +118,17 @@ class TimeEntryService {
         return true;
     }
 
-    async getAllTimeEntryGroups(
-        userId: string,
-        page: number,
-        limit: number
-    ): Promise<{ items: TimeEntryGroup[]; total: number; page: number; limit: number }> {
+    async getAllTimeEntryGroups(userId: string, page: number, limit: number): Promise<PaginatedResult<TimeEntryGroup>> {
         const [groups, total] = await Promise.all([
             this.prisma.timeEntryGroup.findMany({
                 where: { userId },
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
-                include: { _count: { select: { entries: true } }, entries: { take: 1 } },
+                include: {
+                    _count: { select: { entries: true } },
+                    entries: { take: 1 },
+                },
             }),
             this.prisma.timeEntryGroup.count({ where: { userId } }),
         ]);
@@ -146,7 +146,7 @@ class TimeEntryService {
         userId: string,
         page: number,
         limit: number
-    ): Promise<{ items: TimeEntry[]; total: number; page: number; limit: number } | null> {
+    ): Promise<PaginatedResult<TimeEntry> | null> {
         const group = await this.prisma.timeEntryGroup.findFirst({
             where: { id: groupId, userId },
         });
@@ -164,7 +164,7 @@ class TimeEntryService {
         ]);
 
         return {
-            items: entries.map((e) => this.toTimeEntry(e)),
+            items: entries.map((entry) => this.toTimeEntry(entry)),
             total,
             page,
             limit,
@@ -173,11 +173,9 @@ class TimeEntryService {
 
     async getActiveTimeEntry(userId: string): Promise<TimeEntry | null> {
         const timeEntry = await this.prisma.timeEntry.findFirst({
-            where: {
-                endTime: null,
-                group: { userId },
-            },
+            where: { endTime: null, group: { userId } },
         });
+
         return timeEntry ? this.toTimeEntry(timeEntry) : null;
     }
 }
