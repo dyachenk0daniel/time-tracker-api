@@ -6,3 +6,4 @@ dist
 api_tests
 coverage
 logs
+http/http-client.private.env.json

@@ -13,11 +13,13 @@ class TimeEntryController extends RequestHandler {
         this.timeEntryService = timeEntryService;
     }
 
-    async getTimeEntries(req: Request, res: Response, next: NextFunction) {
+    async getTimeEntryGroups(req: Request, res: Response, next: NextFunction) {
         try {
             const { userId } = req.body;
-            const timeEntries = await this.timeEntryService.getAllTimeEntries(userId);
-            this.sendResponse(res, timeEntries);
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+            const result = await this.timeEntryService.getAllTimeEntryGroups(userId, page, limit);
+            this.sendResponse(res, result);
         } catch (error) {
             next(error);
         }
@@ -83,6 +85,24 @@ class TimeEntryController extends RequestHandler {
             const activeTimeEntry = await this.timeEntryService.getActiveTimeEntry(userId);
 
             this.sendResponse(res, activeTimeEntry);
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    async getEntriesByGroupId(req: Request, res: Response, next: NextFunction) {
+        try {
+            const { userId } = req.body;
+            const { groupId } = req.params;
+            const page = Number(req.query.page) || 1;
+            const limit = Number(req.query.limit) || 10;
+            const result = await this.timeEntryService.getEntriesByGroupId(groupId, userId, page, limit);
+
+            if (!result) {
+                throw new HttpException(HttpCode.NotFound, ErrorCode.TimeEntryNotFound, 'Time entry group not found');
+            }
+
+            this.sendResponse(res, result);
         } catch (error) {
             next(error);
         }

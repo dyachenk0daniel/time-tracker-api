@@ -5,6 +5,8 @@ import TimeEntryController from './controller';
 import {
     createTimeEntryValidationRules,
     deleteTimeEntryValidationRules,
+    getEntriesByGroupIdValidationRules,
+    getTimeEntriesValidationRules,
     getTimeEntryByIdValidationRules,
     stopTimeEntryValidationRules,
 } from './validation';
@@ -20,37 +22,122 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  * @swagger
  * /api/time-entries:
  *   get:
- *     summary: Get all time entries
- *     description: Retrieve list of all time entries for authenticated user
+ *     summary: Get all time entry groups
+ *     description: Retrieve paginated list of time entry groups with their entries for authenticated user
  *     tags: [Time Entry]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
  *     responses:
  *       200:
- *         description: Successfully retrieved time entries
+ *         description: Successfully retrieved time entry groups
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 $ref: '#/components/schemas/TimeEntryResponse'
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             format: uuid
+ *                           userId:
+ *                             type: string
+ *                             format: uuid
+ *                           description:
+ *                             type: string
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *                           updatedAt:
+ *                             type: string
+ *                             format: date-time
+ *                             nullable: true
+ *                           entries:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                               properties:
+ *                                 id:
+ *                                   type: string
+ *                                   format: uuid
+ *                                 groupId:
+ *                                   type: string
+ *                                   format: uuid
+ *                                 startTime:
+ *                                   type: string
+ *                                   format: date-time
+ *                                 endTime:
+ *                                   type: string
+ *                                   format: date-time
+ *                                   nullable: true
+ *                                 createdAt:
+ *                                   type: string
+ *                                   format: date-time
+ *                                 updatedAt:
+ *                                   type: string
+ *                                   format: date-time
+ *                                   nullable: true
+ *                     total:
+ *                       type: integer
+ *                       example: 42
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
  *             examples:
- *               activeAndCompleted:
+ *               paginatedResult:
  *                 value:
- *                   - id: "550e8400-e29b-41d4-a716-446655440000"
- *                     userId: "123e4567-e89b-12d3-a456-426614174000"
- *                     description: "Morning coding session"
- *                     startTime: "2023-12-01T09:00:00Z"
- *                     endTime: "2023-12-01T12:00:00Z"
- *                     createdAt: "2023-12-01T08:55:00Z"
- *                     updatedAt: "2023-12-01T12:05:00Z"
- *                   - id: "550e8400-e29b-41d4-a716-446655440001"
- *                     userId: "123e4567-e89b-12d3-a456-426614174000"
- *                     description: "Afternoon meeting"
- *                     startTime: "2023-12-01T14:00:00Z"
- *                     endTime: null
- *                     createdAt: "2023-12-01T13:45:00Z"
- *                     updatedAt: null
+ *                   success: true
+ *                   data:
+ *                     items:
+ *                       - id: "550e8400-e29b-41d4-a716-446655440000"
+ *                         userId: "123e4567-e89b-12d3-a456-426614174000"
+ *                         description: "Morning coding session"
+ *                         createdAt: "2023-12-01T08:55:00Z"
+ *                         updatedAt: null
+ *                         entries:
+ *                           - id: "660e8400-e29b-41d4-a716-446655440001"
+ *                             groupId: "550e8400-e29b-41d4-a716-446655440000"
+ *                             startTime: "2023-12-01T09:00:00Z"
+ *                             endTime: "2023-12-01T12:00:00Z"
+ *                             createdAt: "2023-12-01T09:00:00Z"
+ *                             updatedAt: "2023-12-01T12:00:05Z"
+ *                     total: 42
+ *                     page: 1
+ *                     limit: 10
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
  *       500:
  *         description: Server error
  *         content:
@@ -63,10 +150,16 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  *                   success: false
  *                   error:
  *                     code: "INTERNAL_SERVER_ERROR"
- *                     message: "Failed to retrieve time entries"
+ *                     message: "Failed to retrieve time entry groups"
  *                     details: "Database connection timeout"
  */
-timeEntryRouter.get('/', authenticateToken, timeEntryController.getTimeEntries.bind(timeEntryController));
+timeEntryRouter.get(
+    '/',
+    authenticateToken,
+    getTimeEntriesValidationRules,
+    validateRequest,
+    timeEntryController.getTimeEntryGroups.bind(timeEntryController)
+);
 
 /**
  * @swagger
@@ -444,6 +537,107 @@ timeEntryRouter.delete(
     deleteTimeEntryValidationRules,
     validateRequest,
     timeEntryController.deleteTimeEntry.bind(timeEntryController)
+);
+
+/**
+ * @swagger
+ * /api/time-entries/{groupId}/entries:
+ *   get:
+ *     summary: Get entries for a time entry group
+ *     description: Retrieve paginated list of time entries belonging to a specific group
+ *     tags: [Time Entry]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: groupId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved entries
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             format: uuid
+ *                           groupId:
+ *                             type: string
+ *                             format: uuid
+ *                           description:
+ *                             type: string
+ *                           startTime:
+ *                             type: string
+ *                             format: date-time
+ *                           endTime:
+ *                             type: string
+ *                             format: date-time
+ *                             nullable: true
+ *                     total:
+ *                       type: integer
+ *                       example: 5
+ *                     page:
+ *                       type: integer
+ *                       example: 1
+ *                     limit:
+ *                       type: integer
+ *                       example: 10
+ *       400:
+ *         description: Validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Group not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+timeEntryRouter.get(
+    '/:groupId/entries',
+    authenticateToken,
+    getEntriesByGroupIdValidationRules,
+    validateRequest,
+    timeEntryController.getEntriesByGroupId.bind(timeEntryController)
 );
 
 export default timeEntryRouter;
