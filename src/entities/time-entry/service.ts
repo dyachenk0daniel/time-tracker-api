@@ -1,8 +1,7 @@
-import { TimeEntry } from './types';
+import { TimeEntry, TimeEntryGroup } from './types';
 import { HttpException } from '@interfaces/response-models';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
-import { DateUtils } from '@shared/utils';
 import { PrismaClient } from '@prisma/client';
 
 class TimeEntryService {
@@ -12,26 +11,60 @@ class TimeEntryService {
         this.prisma = prisma;
     }
 
+    private toTimeEntry(entry: {
+        id: string;
+        groupId: string;
+        description: string;
+        startTime: Date;
+        endTime: Date | null;
+    }): TimeEntry {
+        return {
+            id: entry.id,
+            groupId: entry.groupId,
+            description: entry.description,
+            startTime: entry.startTime.toISOString(),
+            endTime: entry.endTime ? entry.endTime.toISOString() : null,
+        };
+    }
+
+    private toTimeEntryGroup(group: { id: string; userId: string; description: string }): TimeEntryGroup {
+        return {
+            id: group.id,
+            userId: group.userId,
+            description: group.description,
+        };
+    }
+
     async getTimeEntryById(id: string, userId: string): Promise<TimeEntry | null> {
-        const timeEntry = await this.prisma.timeEntry.findUnique({
-            where: { id, userId },
+        const timeEntry = await this.prisma.timeEntry.findFirst({
+            where: { id, group: { userId } },
         });
-        return timeEntry ? DateUtils.convertDatesToISOStrings(timeEntry) : null;
+        return timeEntry ? this.toTimeEntry(timeEntry) : null;
     }
 
     async createTimeEntry(userId: string, description: string): Promise<TimeEntry> {
         await this.stopAllTimeEntries(userId);
 
+        let group = await this.prisma.timeEntryGroup.findFirst({
+            where: { userId, description },
+        });
+
+        if (!group) {
+            group = await this.prisma.timeEntryGroup.create({
+                data: { userId, description },
+            });
+        }
+
         const timeEntry = await this.prisma.timeEntry.create({
             data: {
-                userId,
+                groupId: group.id,
                 description,
                 startTime: new Date(),
                 endTime: null,
             },
         });
 
-        return DateUtils.convertDatesToISOStrings(timeEntry);
+        return this.toTimeEntry(timeEntry);
     }
 
     async stopTimeEntry(id: string, userId: string): Promise<TimeEntry> {
@@ -50,25 +83,21 @@ class TimeEntryService {
         }
 
         const updatedTimeEntry = await this.prisma.timeEntry.update({
-            where: {
-                id,
-                userId,
-                endTime: null,
-            },
+            where: { id },
             data: {
                 endTime: new Date(),
                 updatedAt: new Date(),
             },
         });
 
-        return DateUtils.convertDatesToISOStrings(updatedTimeEntry)
+        return this.toTimeEntry(updatedTimeEntry);
     }
 
     async stopAllTimeEntries(userId: string): Promise<number> {
         const result = await this.prisma.timeEntry.updateMany({
             where: {
-                userId,
                 endTime: null,
+                group: { userId },
             },
             data: {
                 endTime: new Date(),
@@ -80,28 +109,63 @@ class TimeEntryService {
     }
 
     async deleteTimeEntry(id: string, userId: string): Promise<boolean> {
-        const result = await this.prisma.timeEntry.delete({
-            where: { id, userId },
+        const timeEntry = await this.prisma.timeEntry.findFirst({
+            where: { id, group: { userId } },
         });
-        return Boolean(result);
+
+        if (!timeEntry) return false;
+
+        await this.prisma.timeEntry.delete({ where: { id } });
+        return true;
     }
 
-    async getAllTimeEntries(
+    async getAllTimeEntryGroups(
         userId: string,
         page: number,
         limit: number
-    ): Promise<{ items: TimeEntry[]; total: number; page: number; limit: number }> {
-        const [timeEntries, total] = await Promise.all([
-            this.prisma.timeEntry.findMany({
+    ): Promise<{ items: TimeEntryGroup[]; total: number; page: number; limit: number }> {
+        const [groups, total] = await Promise.all([
+            this.prisma.timeEntryGroup.findMany({
                 where: { userId },
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
             }),
-            this.prisma.timeEntry.count({ where: { userId } }),
+            this.prisma.timeEntryGroup.count({ where: { userId } }),
         ]);
+
         return {
-            items: timeEntries.map((timeEntry) => DateUtils.convertDatesToISOStrings(timeEntry)),
+            items: groups.map((group) => this.toTimeEntryGroup(group)),
+            total,
+            page,
+            limit,
+        };
+    }
+
+    async getEntriesByGroupId(
+        groupId: string,
+        userId: string,
+        page: number,
+        limit: number
+    ): Promise<{ items: TimeEntry[]; total: number; page: number; limit: number } | null> {
+        const group = await this.prisma.timeEntryGroup.findFirst({
+            where: { id: groupId, userId },
+        });
+
+        if (!group) return null;
+
+        const [entries, total] = await Promise.all([
+            this.prisma.timeEntry.findMany({
+                where: { groupId },
+                skip: (page - 1) * limit,
+                take: limit,
+                orderBy: { startTime: 'desc' },
+            }),
+            this.prisma.timeEntry.count({ where: { groupId } }),
+        ]);
+
+        return {
+            items: entries.map((e) => this.toTimeEntry(e)),
             total,
             page,
             limit,
@@ -111,11 +175,11 @@ class TimeEntryService {
     async getActiveTimeEntry(userId: string): Promise<TimeEntry | null> {
         const timeEntry = await this.prisma.timeEntry.findFirst({
             where: {
-                userId,
                 endTime: null,
+                group: { userId },
             },
         });
-        return timeEntry ? DateUtils.convertDatesToISOStrings(timeEntry) : null;
+        return timeEntry ? this.toTimeEntry(timeEntry) : null;
     }
 }
 

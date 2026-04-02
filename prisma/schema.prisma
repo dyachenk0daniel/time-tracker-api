@@ -8,24 +8,38 @@ datasource db {
 }
 
 model User {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String    @db.VarChar(255)
-  email     String    @unique @db.VarChar(255)
-  password  String    @db.VarChar(255)
-  createdAt DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt DateTime? @db.Timestamptz(6) @map("updated_at")
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String           @db.VarChar(255)
+  email     String           @unique @db.VarChar(255)
+  password  String           @db.VarChar(255)
+  createdAt DateTime         @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt DateTime?        @db.Timestamptz(6) @map("updated_at")
+  groups    TimeEntryGroup[]
 
   @@map("users")
 }
 
+model TimeEntryGroup {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String      @db.Uuid @map("user_id")
+  description String      @db.Text
+  createdAt   DateTime    @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt   DateTime?   @db.Timestamptz(6) @map("updated_at")
+  user        User        @relation(fields: [userId], references: [id])
+  entries     TimeEntry[]
+
+  @@map("time_entry_groups")
+}
+
 model TimeEntry {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  userId      String    @db.Uuid @map("user_id")
-  description String    @db.Text
-  startTime   DateTime  @db.Timestamptz(6) @map("start_time")
-  endTime     DateTime? @db.Timestamptz(6) @map("end_time")
-  createdAt   DateTime  @default(now()) @db.Timestamptz(6) @map("created_at")
-  updatedAt   DateTime? @db.Timestamptz(6) @map("updated_at")
+  id          String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  groupId     String         @db.Uuid @map("group_id")
+  description String         @db.Text
+  startTime   DateTime       @db.Timestamptz(6) @map("start_time")
+  endTime     DateTime?      @db.Timestamptz(6) @map("end_time")
+  createdAt   DateTime       @default(now()) @db.Timestamptz(6) @map("created_at")
+  updatedAt   DateTime?      @db.Timestamptz(6) @map("updated_at")
+  group       TimeEntryGroup @relation(fields: [groupId], references: [id])
 
   @@map("time_entries")
 }
