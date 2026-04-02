@@ -13,3 +13,10 @@ export interface TimeEntryGroup {
     entriesCount: number;
     entry: TimeEntry | null;
 }
+
+export interface PaginatedResult<T> {
+    items: T[];
+    total: number;
+    page: number;
+    limit: number;
+}
