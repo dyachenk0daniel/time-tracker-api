@@ -88,11 +88,21 @@ describe('timeEntryRouter', () => {
                 id: '123e4567-e89b-12d3-a456-426614174001',
                 userId: mockUserId,
                 description: 'Test group 1',
+                entriesCount: 2,
+                entry: null,
             },
             {
                 id: '123e4567-e89b-12d3-a456-426614174002',
                 userId: mockUserId,
                 description: 'Test group 2',
+                entriesCount: 1,
+                entry: {
+                    id: '123e4567-e89b-12d3-a456-426614174010',
+                    groupId: '123e4567-e89b-12d3-a456-426614174002',
+                    description: 'Test group 2',
+                    startTime: '2023-12-02T12:00:00Z',
+                    endTime: null,
+                },
             },
         ];
 

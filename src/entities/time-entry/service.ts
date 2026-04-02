@@ -2,7 +2,7 @@ import { TimeEntry, TimeEntryGroup } from './types';
 import { HttpException } from '@interfaces/response-models';
 import HttpCode from '@interfaces/http-code';
 import { ErrorCode } from '@interfaces/error-code';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, TimeEntry as PrismaTimeEntry, TimeEntryGroup as PrismaTimeEntryGroup } from '@prisma/client';
 
 class TimeEntryService {
     private readonly prisma: PrismaClient;
@@ -11,13 +11,7 @@ class TimeEntryService {
         this.prisma = prisma;
     }
 
-    private toTimeEntry(entry: {
-        id: string;
-        groupId: string;
-        description: string;
-        startTime: Date;
-        endTime: Date | null;
-    }): TimeEntry {
+    private toTimeEntry(entry: PrismaTimeEntry): TimeEntry {
         return {
             id: entry.id,
             groupId: entry.groupId,
@@ -27,11 +21,15 @@ class TimeEntryService {
         };
     }
 
-    private toTimeEntryGroup(group: { id: string; userId: string; description: string }): TimeEntryGroup {
+    private toTimeEntryGroup(
+        group: PrismaTimeEntryGroup & { _count: { entries: number }; entries: PrismaTimeEntry[] }
+    ): TimeEntryGroup {
         return {
             id: group.id,
             userId: group.userId,
             description: group.description,
+            entriesCount: group._count.entries,
+            entry: group._count.entries === 1 ? this.toTimeEntry(group.entries[0]) : null,
         };
     }
 
@@ -130,6 +128,7 @@ class TimeEntryService {
                 skip: (page - 1) * limit,
                 take: limit,
                 orderBy: { createdAt: 'desc' },
+                include: { _count: { select: { entries: true } }, entries: { take: 1 } },
             }),
             this.prisma.timeEntryGroup.count({ where: { userId } }),
         ]);

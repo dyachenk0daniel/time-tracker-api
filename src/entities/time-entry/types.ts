@@ -10,4 +10,6 @@ export interface TimeEntryGroup {
     id: string;
     userId: string;
     description: string;
+    entriesCount: number;
+    entry: TimeEntry | null;
 }
