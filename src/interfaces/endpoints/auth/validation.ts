@@ -2,12 +2,10 @@ import { body } from 'express-validator';
 
 const PASSWORD_REQUIREMENTS = {
     minLength: 8,
-    pattern: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+    pattern: /^.{8,}$/,
 };
 
-const PASSWORD_ERROR_MESSAGE =
-    'Password must be at least 8 characters long, contain at least one uppercase letter, ' +
-    'one lowercase letter, one number and one special character (@$!%*?&)';
+const PASSWORD_ERROR_MESSAGE = 'Password must be at least 8 characters long';
 
 export const loginValidationRules = [
     body('email')
