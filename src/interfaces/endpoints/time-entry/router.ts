@@ -70,13 +70,39 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  *                             format: uuid
  *                           description:
  *                             type: string
- *                           createdAt:
- *                             type: string
- *                             format: date-time
- *                           updatedAt:
+ *                           entriesCount:
+ *                             type: integer
+ *                             example: 3
+ *                           startTime:
  *                             type: string
  *                             format: date-time
  *                             nullable: true
+ *                             description: Start time of the earliest entry in this group
+ *                           endTime:
+ *                             type: string
+ *                             format: date-time
+ *                             nullable: true
+ *                             description: End time of the latest entry in this group; null if any entry is still running
+ *                           entry:
+ *                             description: Inline entry object when the group contains exactly one entry; null otherwise
+ *                             nullable: true
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                                 format: uuid
+ *                               groupId:
+ *                                 type: string
+ *                                 format: uuid
+ *                               description:
+ *                                 type: string
+ *                               startTime:
+ *                                 type: string
+ *                                 format: date-time
+ *                               endTime:
+ *                                 type: string
+ *                                 format: date-time
+ *                                 nullable: true
  *                           entries:
  *                             type: array
  *                             items:
@@ -120,15 +146,15 @@ const timeEntryController = new TimeEntryController(timeEntryService);
  *                       - id: "550e8400-e29b-41d4-a716-446655440000"
  *                         userId: "123e4567-e89b-12d3-a456-426614174000"
  *                         description: "Morning coding session"
- *                         createdAt: "2023-12-01T08:55:00Z"
- *                         updatedAt: null
- *                         entries:
- *                           - id: "660e8400-e29b-41d4-a716-446655440001"
- *                             groupId: "550e8400-e29b-41d4-a716-446655440000"
- *                             startTime: "2023-12-01T09:00:00Z"
- *                             endTime: "2023-12-01T12:00:00Z"
- *                             createdAt: "2023-12-01T09:00:00Z"
- *                             updatedAt: "2023-12-01T12:00:05Z"
+ *                         entriesCount: 1
+ *                         startTime: "2023-12-01T09:00:00Z"
+ *                         endTime: "2023-12-01T12:00:00Z"
+ *                         entry:
+ *                           id: "660e8400-e29b-41d4-a716-446655440001"
+ *                           groupId: "550e8400-e29b-41d4-a716-446655440000"
+ *                           description: "Morning coding session"
+ *                           startTime: "2023-12-01T09:00:00Z"
+ *                           endTime: "2023-12-01T12:00:00Z"
  *                     total: 42
  *                     page: 1
  *                     limit: 10

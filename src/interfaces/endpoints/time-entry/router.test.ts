@@ -89,6 +89,8 @@ describe('timeEntryRouter', () => {
                 userId: mockUserId,
                 description: 'Test group 1',
                 entriesCount: 2,
+                startTime: '2023-12-01T09:00:00Z',
+                endTime: '2023-12-01T12:00:00Z',
                 entry: null,
             },
             {
@@ -96,6 +98,8 @@ describe('timeEntryRouter', () => {
                 userId: mockUserId,
                 description: 'Test group 2',
                 entriesCount: 1,
+                startTime: '2023-12-02T12:00:00Z',
+                endTime: null,
                 entry: {
                     id: '123e4567-e89b-12d3-a456-426614174010',
                     groupId: '123e4567-e89b-12d3-a456-426614174002',

@@ -26,7 +26,11 @@ class TimeEntryService {
         };
     }
 
-    private toTimeEntryGroup(group: PrismaTimeEntryGroupWithRelations): TimeEntryGroup {
+    private toTimeEntryGroup(
+        group: PrismaTimeEntryGroupWithRelations,
+        startTime: Date | null,
+        endTime: Date | null
+    ): TimeEntryGroup {
         const hasSingleEntry = group._count.entries === 1;
 
         return {
@@ -34,6 +38,8 @@ class TimeEntryService {
             userId: group.userId,
             description: group.description,
             entriesCount: group._count.entries,
+            startTime: startTime?.toISOString() ?? null,
+            endTime: endTime?.toISOString() ?? null,
             entry: hasSingleEntry ? this.toTimeEntry(group.entries[0]) : null,
         };
     }
@@ -133,8 +139,25 @@ class TimeEntryService {
             this.prisma.timeEntryGroup.count({ where: { userId } }),
         ]);
 
+        const groupIds = groups.map((g) => g.id);
+        const aggregates = await this.prisma.timeEntry.groupBy({
+            by: ['groupId'],
+            where: { groupId: { in: groupIds } },
+            _min: { startTime: true },
+            _max: { endTime: true },
+        });
+
+        const aggregateMap = new Map(aggregates.map((a) => [a.groupId, a]));
+
         return {
-            items: groups.map((group) => this.toTimeEntryGroup(group)),
+            items: groups.map((group) => {
+                const agg = aggregateMap.get(group.id);
+                return this.toTimeEntryGroup(
+                    group,
+                    agg?._min.startTime ?? null,
+                    agg?._max.endTime ?? null
+                );
+            }),
             total,
             page,
             limit,
